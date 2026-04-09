@@ -1,0 +1,36 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "timezone": "Asia/Seoul",
+  "schedule": ["* * * * *"],
+  "prHourlyLimit": 2,
+  "prConcurrentLimit": 10,
+  "rangeStrategy": "bump",
+  "minimumReleaseAge": "7 days",
+  "labels": ["dependencies"],
+  "major": {
+    "enabled": false
+  },
+  "baseBranchPatterns": ["main"],
+  "vulnerabilityAlerts": {
+    "enabled": true
+  },
+  "reviewers": ["stevejkang"],
+  "packageRules": [
+    {
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["mysql"],
+      "enabled": false
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "major": {
+        "enabled": true
+      }
+    }
+  ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 8am on monday"]
+  }
+}
