@@ -2,7 +2,7 @@ import { Result } from './Result';
 
 describe('Result', () => {
   it('should return error when access value from error result', () => {
-    expect(() => Result.fail('FAIL').value).toThrowError(Error);
+    expect(() => Result.fail('FAIL').value).toThrow(Error);
   });
 
   it('should return value from ok result', () => {
@@ -10,11 +10,11 @@ describe('Result', () => {
   });
 
   it('should return error when result is successful and contains an error', () => {
-    expect(() => new Result(true, 'FAIL')).toThrowError(Error);
+    expect(() => new Result(true, 'FAIL')).toThrow(Error);
   });
 
   it('should return error when result is failing and error has not provided', () => {
-    expect(() => new Result(false)).toThrowError(Error);
+    expect(() => new Result(false)).toThrow(Error);
   });
 
   it('should return error value', () => {
@@ -22,7 +22,11 @@ describe('Result', () => {
   });
 
   it('should return result when combine', () => {
-    expect(Result.combine([Result.ok('OK'), Result.fail('FAIL')])).toEqual(Result.fail('FAIL'));
-    expect(Result.combine([Result.ok('OK'), Result.ok('OK')]).isSuccess).toEqual(true);
+    expect(Result.combine([Result.ok('OK'), Result.fail('FAIL')])).toEqual(
+      Result.fail('FAIL'),
+    );
+    expect(
+      Result.combine([Result.ok('OK'), Result.ok('OK')]).isSuccess,
+    ).toEqual(true);
   });
 });

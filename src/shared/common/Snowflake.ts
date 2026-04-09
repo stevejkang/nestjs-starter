@@ -3,7 +3,10 @@ export class Snowflake {
   static SHARD_ID = 1;
   static SEQUENCE = 1;
 
-  static generate({ timestamp = Date.now(), shard_id = Snowflake.SHARD_ID }: { timestamp?: Date | number; shard_id?: number; } = {}): string {
+  static generate({
+    timestamp = Date.now(),
+    shard_id = Snowflake.SHARD_ID,
+  }: { timestamp?: Date | number; shard_id?: number } = {}): string {
     if (timestamp instanceof Date) {
       timestamp = timestamp.valueOf();
     } else {
@@ -36,12 +39,16 @@ export class Snowflake {
     try {
       Snowflake.parse(snowflake);
       return true;
-    } catch (e) {
+    } catch (_e) {
       return false;
     }
   }
 
-  static extractBits(snowflake: SnowflakeResolvable, start: number, length?: number): number {
+  static extractBits(
+    snowflake: SnowflakeResolvable,
+    start: number,
+    length?: number,
+  ): number {
     return parseInt(
       length
         ? Snowflake.binary(snowflake).substring(start, start + length)
@@ -51,7 +58,8 @@ export class Snowflake {
   }
 
   static binary(snowflake: SnowflakeResolvable): string {
-    const cached64BitZeros = '0000000000000000000000000000000000000000000000000000000000000000';
+    const cached64BitZeros =
+      '0000000000000000000000000000000000000000000000000000000000000000';
     const binValue = BigInt(snowflake).toString(2);
 
     return binValue.length < 64

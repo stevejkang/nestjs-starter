@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "ignoreDeprecations": "6.0",
     "module": "commonjs",
     "declaration": true,
     "removeComments": true,
@@ -9,6 +10,7 @@
     "target": "ESNext",
     "sourceMap": true,
     "outDir": "./dist",
+    "rootDir": "./src",
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
@@ -17,7 +19,6 @@
     "allowJs": false,
     "checkJs": false,
     "importHelpers": true,
-    "importsNotUsedAsValues": "remove",
     "downlevelIteration": true,
     "isolatedModules": true,
     "strict": true,
@@ -36,9 +37,7 @@
     "types": ["node", "jest", "express"],
     "typeRoots": ["src/@types", "node_modules/@types"],
     "paths": {
-      "@shared/*": [
-        "src/shared/*"
-      ]
+      "@shared/*": ["src/shared/*"]
     }
   }
 }
