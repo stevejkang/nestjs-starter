@@ -1,4 +1,5 @@
 import { initializeTransactionalContext } from 'typeorm-transactional';
+import { ValidationPipe } from '@nestjs/common';
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AllExceptionsFilter } from '@shared/filters/AllExceptionsFilter';
 import { HttpLoggingInterceptor } from '@shared/interceptors/HttpLoggingInterceptor';
@@ -16,6 +17,13 @@ async function bootstrap(): Promise<void> {
   const httpAdapterHost = app.get(HttpAdapterHost);
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapterHost));
   app.useGlobalInterceptors(new HttpLoggingInterceptor());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
   app.getHttpAdapter().getInstance().disable('x-powered-by');
 
   if (!IS_PRODUCTION) {

@@ -19,11 +19,12 @@ export class PasswordHandler {
       }
 
       return await argon2.hash(password, this.ARGON2_OPTIONS);
-    } catch (error) {
-      if (error.message.includes('Password')) {
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message.includes('Password')) {
         throw error;
       }
-      throw new Error(`Password hashing failed: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Password hashing failed: ${message}`);
     }
   }
 
@@ -34,8 +35,9 @@ export class PasswordHandler {
       }
 
       return await argon2.verify(hashedPassword, candidatePassword);
-    } catch (error) {
-      console.error('Password comparison failed:', error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error('Password comparison failed:', message);
       return false;
     }
   }
@@ -43,8 +45,9 @@ export class PasswordHandler {
   static async needsRehash(hashedPassword: string): Promise<boolean> {
     try {
       return argon2.needsRehash(hashedPassword, this.ARGON2_OPTIONS);
-    } catch (error) {
-      console.error('Rehash check failed:', error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error('Rehash check failed:', message);
       return false;
     }
   }

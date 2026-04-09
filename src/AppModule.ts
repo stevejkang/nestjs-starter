@@ -7,6 +7,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TraceIdIssuanceMiddleware } from '@shared/middlewares/TraceIdIssuanceMiddleware';
 import { config } from '@shared/config/config';
 import { AppController } from './app.controller';
+import { AuthModule } from './auth/AuthModule';
 
 @Module({
   imports: [
@@ -39,14 +40,13 @@ import { AppController } from './app.controller';
         return addTransactionalDataSource(new DataSource(options));
       },
     }),
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer
-      .apply(TraceIdIssuanceMiddleware)
-      .forRoutes('*');
+    consumer.apply(TraceIdIssuanceMiddleware).forRoutes('*');
   }
 }

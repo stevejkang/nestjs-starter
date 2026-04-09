@@ -12,8 +12,6 @@ export function initializeSwaggerDocument(app: INestApplication): void {
     .addServer('https://example.com', 'Staging')
     .addServer('https://example.com', 'Production')
     .setVersion('1.0.0')
-    .addTag('Post', 'Post APIs')
-    .addTag('Post Comment', 'Post Comment APIs')
     .build();
 
   const options: SwaggerCustomOptions = {
