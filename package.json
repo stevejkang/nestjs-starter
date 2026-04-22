@@ -24,12 +24,12 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@nestjs/common": "^11.1.18",
+    "@nestjs/common": "^11.1.19",
     "@nestjs/config": "^4.0.4",
-    "@nestjs/core": "^11.1.18",
+    "@nestjs/core": "^11.1.19",
     "@nestjs/event-emitter": "^3.0.1",
     "@nestjs/passport": "^11.0.5",
-    "@nestjs/platform-express": "^11.1.18",
+    "@nestjs/platform-express": "^11.1.19",
     "@nestjs/swagger": "^11.3.0",
     "@nestjs/typeorm": "^11.0.1",
     "argon2": "^0.44.0",
@@ -47,9 +47,9 @@
     "typeorm-transactional": "^0.5.0"
   },
   "devDependencies": {
-    "@nestjs/cli": "^11.0.19",
+    "@nestjs/cli": "^11.0.21",
     "@nestjs/schematics": "^11.0.10",
-    "@nestjs/testing": "^11.1.18",
+    "@nestjs/testing": "^11.1.19",
     "@swc/cli": "^0.8.1",
     "@swc/core": "^1.15.26",
     "@types/express": "^5.0.6",
