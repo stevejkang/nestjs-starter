@@ -1,4 +1,5 @@
 import { initializeTransactionalContext } from 'typeorm-transactional';
+import helmet from 'helmet';
 import { ValidationPipe } from '@nestjs/common';
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AllExceptionsFilter } from '@shared/filters/AllExceptionsFilter';
@@ -14,6 +15,8 @@ async function bootstrap(): Promise<void> {
   initializeTransactionalContext();
 
   const app = await NestFactory.create(AppModule);
+  app.use(helmet());
+
   const httpAdapterHost = app.get(HttpAdapterHost);
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapterHost));
   app.useGlobalInterceptors(new HttpLoggingInterceptor());
@@ -24,7 +27,6 @@ async function bootstrap(): Promise<void> {
       transform: true,
     }),
   );
-  app.getHttpAdapter().getInstance().disable('x-powered-by');
 
   if (!IS_PRODUCTION) {
     initializeSwaggerDocument(app);
