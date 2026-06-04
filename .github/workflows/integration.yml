@@ -29,6 +29,10 @@ jobs:
         run: |
           npm run lint:check
 
+      - name: Run typecheck
+        run: |
+          npm run typecheck
+
       - name: Run unit tests with coverage
         run: |
           npm run test:cov
