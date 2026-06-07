@@ -1,18 +1,10 @@
-import { Transform } from 'class-transformer';
 import { IsInt, IsOptional, Max, Min } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { TransformToNumber } from './decorators/TransformToNumber';
 
 export const DEFAULT_PAGINATION_PAGE = 1;
 export const DEFAULT_PAGINATION_LIMIT = 20;
 export const DEFAULT_MAX_PAGINATION_LIMIT = 100;
-
-const transformQueryNumber = ({ value }: { value: unknown }): number | undefined => {
-  if (value === undefined) {
-    return undefined;
-  }
-
-  return Number(value);
-};
 
 export class PaginationQuery {
   @ApiPropertyOptional({
@@ -23,7 +15,7 @@ export class PaginationQuery {
     example: 1,
   })
   @IsOptional()
-  @Transform(transformQueryNumber)
+  @TransformToNumber()
   @IsInt()
   @Min(1)
   page: number = DEFAULT_PAGINATION_PAGE;
@@ -37,7 +29,7 @@ export class PaginationQuery {
     example: DEFAULT_PAGINATION_LIMIT,
   })
   @IsOptional()
-  @Transform(transformQueryNumber)
+  @TransformToNumber()
   @IsInt()
   @Min(1)
   @Max(DEFAULT_MAX_PAGINATION_LIMIT)

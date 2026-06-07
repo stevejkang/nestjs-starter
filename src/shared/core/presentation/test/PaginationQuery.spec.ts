@@ -1,6 +1,6 @@
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
-
+import { BadRequestException } from '@nestjs/common';
 import { PaginationQuery } from '../PaginationQuery';
 
 describe('PaginationQuery', () => {
@@ -91,15 +91,12 @@ describe('PaginationQuery', () => {
     expect(errors.map((error) => error.property)).toEqual(['page', 'limit']);
   });
 
-  it('rejects non-numeric string values', async () => {
-    const query = plainToInstance(PaginationQuery, {
-      page: 'one',
-      limit: 'twenty',
-    });
-
-    const errors = await validate(query);
-
-    expect(errors).toHaveLength(2);
-    expect(errors.map((error) => error.property)).toEqual(['page', 'limit']);
+  it('rejects non-numeric string values', () => {
+    expect(() =>
+      plainToInstance(PaginationQuery, {
+        page: 'one',
+        limit: 'twenty',
+      }),
+    ).toThrow(BadRequestException);
   });
 });

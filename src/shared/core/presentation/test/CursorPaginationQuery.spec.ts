@@ -1,6 +1,6 @@
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
-
+import { BadRequestException } from '@nestjs/common';
 import { CursorPaginationQuery } from '../CursorPaginationQuery';
 
 describe('CursorPaginationQuery', () => {
@@ -75,15 +75,11 @@ describe('CursorPaginationQuery', () => {
     expect(errors[0]?.constraints).toHaveProperty('isInt');
   });
 
-  it('rejects non-numeric string limit values', async () => {
-    const query = plainToInstance(CursorPaginationQuery, {
-      limit: 'many',
-    });
-
-    const errors = await validate(query);
-
-    expect(errors).toHaveLength(1);
-    expect(errors[0]?.property).toBe('limit');
-    expect(errors[0]?.constraints).toHaveProperty('isInt');
+  it('rejects non-numeric string limit values', () => {
+    expect(() =>
+      plainToInstance(CursorPaginationQuery, {
+        limit: 'many',
+      }),
+    ).toThrow(BadRequestException);
   });
 });
