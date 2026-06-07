@@ -144,6 +144,13 @@ describe('PasswordHandler', () => {
       const needsRehash = await PasswordHandler.needsRehash('');
       expect(needsRehash).toBe(false);
     });
+
+    it('should return false for null/undefined hash', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect(await PasswordHandler.needsRehash(null as any)).toBe(false);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect(await PasswordHandler.needsRehash(undefined as any)).toBe(false);
+    });
   });
 
   describe('integration tests', () => {
