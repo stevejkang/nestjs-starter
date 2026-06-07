@@ -91,6 +91,18 @@ describe('PaginationQuery', () => {
     expect(errors.map((error) => error.property)).toEqual(['page', 'limit']);
   });
 
+  it('accepts limit at the exact maximum boundary', async () => {
+    const query = plainToInstance(PaginationQuery, {
+      page: '1',
+      limit: '100',
+    });
+
+    const errors = await validate(query);
+
+    expect(errors).toHaveLength(0);
+    expect(query.limit).toBe(100);
+  });
+
   it('rejects non-numeric string values', () => {
     expect(() =>
       plainToInstance(PaginationQuery, {
@@ -98,5 +110,31 @@ describe('PaginationQuery', () => {
         limit: 'twenty',
       }),
     ).toThrow(BadRequestException);
+  });
+
+  it('rejects negative page values', async () => {
+    const query = plainToInstance(PaginationQuery, {
+      page: '-1',
+      limit: '20',
+    });
+
+    const errors = await validate(query);
+
+    expect(errors).toHaveLength(1);
+    expect(errors[0]?.property).toBe('page');
+    expect(errors[0]?.constraints).toHaveProperty('min');
+  });
+
+  it('rejects negative limit values', async () => {
+    const query = plainToInstance(PaginationQuery, {
+      page: '1',
+      limit: '-5',
+    });
+
+    const errors = await validate(query);
+
+    expect(errors).toHaveLength(1);
+    expect(errors[0]?.property).toBe('limit');
+    expect(errors[0]?.constraints).toHaveProperty('min');
   });
 });

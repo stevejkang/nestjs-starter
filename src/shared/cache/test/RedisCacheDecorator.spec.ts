@@ -125,6 +125,40 @@ describe('MethodCache', () => {
     });
   });
 
+  describe('without cache client', () => {
+    it('should execute method and return result without caching', async () => {
+      class NoCacheService {
+        @MethodCache({ prefix: 'user', ttlSeconds: 60 })
+        async getUser(id: string): Promise<{ id: string; name: string }> {
+          return { id, name: `User ${id}` };
+        }
+      }
+
+      const service = new NoCacheService();
+      const result = await service.getUser('1');
+
+      expect(result).toEqual({ id: '1', name: 'User 1' });
+    });
+
+    it('should handle concurrent calls without cache client', async () => {
+      class NoCacheService {
+        @MethodCache({ prefix: 'user', ttlSeconds: 60 })
+        async getUser(id: string): Promise<{ id: string; name: string }> {
+          return { id, name: `User ${id}` };
+        }
+      }
+
+      const service = new NoCacheService();
+      const [r1, r2] = await Promise.all([
+        service.getUser('1'),
+        service.getUser('1'),
+      ]);
+
+      expect(r1).toEqual({ id: '1', name: 'User 1' });
+      expect(r2).toEqual({ id: '1', name: 'User 1' });
+    });
+  });
+
   describe('graceful degradation on Redis failure', () => {
     it('should fall back to original method when Redis get fails', async () => {
       const client = createMockClient({

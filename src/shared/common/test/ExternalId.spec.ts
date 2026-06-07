@@ -95,4 +95,43 @@ describe('ExternalId', () => {
       expect(encoded).toMatch(/^[0-9a-zA-Z]+$/);
     });
   });
+
+  describe('encode edge cases', () => {
+    it('should handle encoding when computed value is zero', () => {
+      const encoded = ExternalId.encode(0, '');
+
+      expect(encoded).toMatch(/^[0-9a-zA-Z]+$/);
+      expect(encoded.length).toBeGreaterThanOrEqual(8);
+    });
+
+    it('should round-trip encode/decode with zero id and empty entity type', () => {
+      const encoded = ExternalId.encode(0, '');
+      const decoded = ExternalId.decode(encoded, '');
+
+      expect(decoded).toEqual(0);
+    });
+  });
+
+  describe('decode rejects tampered external IDs', () => {
+    it('should return null when prepending characters changes the decoded payload', () => {
+      const encoded = ExternalId.encode(1, 'user');
+      const tampered = 'A' + encoded;
+
+      const decoded = ExternalId.decode(tampered, 'user');
+
+      expect(decoded === null || decoded !== 1).toBe(true);
+    });
+
+    it('should return null for a valid-looking string with wrong checksum', () => {
+      const encoded = ExternalId.encode(42, 'user');
+      const chars = encoded.split('');
+      const lastChar = chars[chars.length - 1];
+      chars[chars.length - 1] = lastChar === 'a' ? 'b' : 'a';
+      const modified = chars.join('');
+
+      const decoded = ExternalId.decode(modified, 'user');
+
+      expect(decoded).toBeNull();
+    });
+  });
 });

@@ -89,4 +89,41 @@ describe('IsValidUrl', () => {
 
     expect(errors).toHaveLength(1);
   });
+
+  it('should reject non-string values', async () => {
+    const dto = new UrlDto();
+    (dto as unknown as Record<string, unknown>).url = 12345;
+
+    const errors = await validate(dto);
+
+    expect(errors).toHaveLength(1);
+  });
+
+  it('should reject null values', async () => {
+    const dto = new UrlDto();
+    (dto as unknown as Record<string, unknown>).url = null;
+
+    const errors = await validate(dto);
+
+    expect(errors).toHaveLength(1);
+  });
+
+  it('should reject undefined values', async () => {
+    const dto = new UrlDto();
+    (dto as unknown as Record<string, unknown>).url = undefined;
+
+    const errors = await validate(dto);
+
+    expect(errors).toHaveLength(1);
+  });
+
+  it('should reject non-string values when conditional function returns true', async () => {
+    const dto = new ConditionalDto();
+    dto.validateUrl = true;
+    (dto as unknown as Record<string, unknown>).url = 42;
+
+    const errors = await validate(dto);
+
+    expect(errors).toHaveLength(1);
+  });
 });

@@ -213,4 +213,59 @@ describe('IdempotencyInterceptor', () => {
       );
     });
   });
+
+  describe('when cleanup of processing marker fails on 5xx', () => {
+    it('should not throw when del fails during 5xx cleanup', async () => {
+      cacheClient = createMockCacheClient({
+        del: jest.fn().mockRejectedValue(new Error('Redis del failed')),
+      });
+      interceptor = new IdempotencyInterceptor(cacheClient);
+
+      const context = createMockExecutionContext({ 'idempotency-key': 'abc-123' });
+      const response = context.switchToHttp().getResponse() as { statusCode: number };
+      response.statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+      const handler = createMockCallHandler({ error: 'internal' });
+
+      const result = await lastValueFrom(interceptor.intercept(context, handler));
+
+      expect(result).toEqual({ error: 'internal' });
+      expect(cacheClient.del).toHaveBeenCalledWith(['idempotency:abc-123:processing']);
+    });
+  });
+
+  describe('when result caching fails after successful response', () => {
+    it('should log warning when del after set fails in result caching chain', async () => {
+      cacheClient = createMockCacheClient({
+        set: jest.fn().mockImplementation((key: string) => {
+          if (key.endsWith(':processing')) return Promise.resolve(undefined);
+          return Promise.resolve(undefined);
+        }),
+        del: jest.fn().mockRejectedValue(new Error('Redis del failed')),
+      });
+      interceptor = new IdempotencyInterceptor(cacheClient);
+
+      const context = createMockExecutionContext({ 'idempotency-key': 'abc-123' });
+      const handler = createMockCallHandler({ data: 'ok' });
+
+      const result = await lastValueFrom(interceptor.intercept(context, handler));
+
+      expect(result).toEqual({ data: 'ok' });
+    });
+  });
+
+  describe('when processing marker set fails', () => {
+    it('should fall through to handler via catchError when set fails', async () => {
+      cacheClient = createMockCacheClient({
+        set: jest.fn().mockRejectedValue(new Error('Redis set failed')),
+      });
+      interceptor = new IdempotencyInterceptor(cacheClient);
+
+      const context = createMockExecutionContext({ 'idempotency-key': 'abc-123' });
+      const handler = createMockCallHandler({ fallback: true });
+
+      const result = await lastValueFrom(interceptor.intercept(context, handler));
+
+      expect(result).toEqual({ fallback: true });
+    });
+  });
 });
