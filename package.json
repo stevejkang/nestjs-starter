@@ -25,12 +25,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@nestjs/common": "^11.1.24",
+    "@nestjs/common": "^11.1.25",
     "@nestjs/config": "^4.0.4",
-    "@nestjs/core": "^11.1.24",
+    "@nestjs/core": "^11.1.25",
     "@nestjs/event-emitter": "^3.1.0",
     "@nestjs/passport": "^11.0.5",
-    "@nestjs/platform-express": "^11.1.24",
+    "@nestjs/platform-express": "^11.1.25",
     "@nestjs/swagger": "^11.4.4",
     "@nestjs/typeorm": "^11.0.1",
     "argon2": "^0.44.0",
@@ -49,9 +49,9 @@
     "typeorm-transactional": "^0.5.0"
   },
   "devDependencies": {
-    "@nestjs/cli": "^11.0.21",
+    "@nestjs/cli": "^11.0.22",
     "@nestjs/schematics": "^11.1.0",
-    "@nestjs/testing": "^11.1.24",
+    "@nestjs/testing": "^11.1.25",
     "@swc/cli": "^0.8.1",
     "@swc/core": "^1.15.40",
     "@types/express": "^5.0.6",
