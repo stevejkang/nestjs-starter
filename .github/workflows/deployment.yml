@@ -1,15 +1,47 @@
----
-name: Development Deployment
+name: Deployment
+run-name: Deploy to ${{ github.event.inputs.environment || inputs.environment }} by @${{ github.actor }}
 
 on:
-  push:
-    branches:
-      - deploy/dev
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: environment
 
 jobs:
+  guard:
+    name: Guard
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Validate environment name
+        run: |
+          if [[ "${{ inputs.environment }}" != "production" && "${{ inputs.environment }}" != "development" ]]; then
+            echo "::error::Environment must be exactly 'production' or 'development', got: '${{ inputs.environment }}'"
+            exit 1
+          fi
+
+      - name: Validate required variables
+        run: |
+          if [ -z "${{ vars.PROJECT_NAME }}" ]; then
+            echo "::error::PROJECT_NAME is not set for the '${{ inputs.environment }}' environment"
+            exit 1
+          fi
+          if [ -z "${{ vars.ECR_REPOSITORY }}" ]; then
+            echo "::error::ECR_REPOSITORY is not set for the '${{ inputs.environment }}' environment"
+            exit 1
+          fi
+          if [ -z "${{ vars.ECS_CLUSTER }}" ]; then
+            echo "::error::ECS_CLUSTER is not set for the '${{ inputs.environment }}' environment"
+            exit 1
+          fi
+
   deployment:
     name: Deployment
+    needs: guard
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v6
@@ -35,40 +67,40 @@ jobs:
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: api-ecr
+          ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
           IMAGE_TAG: ${{ steps.vars.outputs.rev_sha }}
-          NODE_ENV: development
+          NODE_ENV: ${{ inputs.environment }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
           MYSQL_PORT: ${{ secrets.MYSQL_PORT }}
           MYSQL_USER: ${{ secrets.MYSQL_USER }}
           MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
           MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
-
         run: |
           cat .env.example | envsubst > .env
-          docker build --build-arg ENV=development -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f Dockerfile.development .
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
 
       - name: Download task definition
         run: |
-          aws ecs describe-task-definition --task-definition 'api-service' --query taskDefinition > task-definition.json
+          aws ecs describe-task-definition --task-definition '${{ vars.PROJECT_NAME }}-service' --query taskDefinition > task-definition.json
           echo $(jq '.cpu = $CPU_VALUE' --arg CPU_VALUE 1024 task-definition.json) > task-definition.json
           echo $(jq '.memory = $MEMORY_VALUE' --arg MEMORY_VALUE 2048 task-definition.json) > task-definition.json
+          echo $(jq '.containerDefinitions[0].environment |= (map(select(.name != "NODE_ENV")) + [{"name": "NODE_ENV", "value": $ENV}])' --arg ENV "${{ inputs.environment }}" task-definition.json) > task-definition.json
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: task-definition.json
-          container-name: api-application
+          container-name: ${{ vars.PROJECT_NAME }}-application
           image: ${{ steps.build-image.outputs.image }}
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: api-service
-          cluster: api-cluster
+          service: ${{ vars.PROJECT_NAME }}-service
+          cluster: ${{ vars.ECS_CLUSTER }}
           wait-for-service-stability: true
