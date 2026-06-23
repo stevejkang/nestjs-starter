@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  schedule:
+    - cron: '0 0 * * 1' # Every Monday at 00:00 UTC (09:00 KST)
+  workflow_dispatch:
+
+jobs:
+  release:
+    name: Release
+    if: github.repository == 'stevejkang/nestjs-starter'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Check for changes since last release
+        id: changes
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LATEST_TAG" ]; then
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+            echo "No previous release found. Proceeding with first release."
+          else
+            COMMIT_COUNT=$(git rev-list "${LATEST_TAG}..HEAD" --count)
+            if [ "$COMMIT_COUNT" -eq 0 ]; then
+              echo "has_changes=false" >> "$GITHUB_OUTPUT"
+              echo "No changes since ${LATEST_TAG}. Skipping release."
+            else
+              echo "has_changes=true" >> "$GITHUB_OUTPUT"
+              echo "${COMMIT_COUNT} commit(s) since ${LATEST_TAG}."
+            fi
+          fi
+
+      - name: Determine release tag
+        if: steps.changes.outputs.has_changes == 'true'
+        id: tag
+        run: |
+          GENERATION="1"
+          YEAR_WEEK="$(date -u +'%y')$(date -u +'%V')"
+          PATCH=0
+
+          while git rev-parse "v${GENERATION}.${YEAR_WEEK}.${PATCH}" >/dev/null 2>&1; do
+            PATCH=$((PATCH + 1))
+          done
+
+          TAG="v${GENERATION}.${YEAR_WEEK}.${PATCH}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "Release tag: ${TAG}"
+
+      - name: Create release
+        if: steps.changes.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.tag.outputs.tag }}" \
+            --target main \
+            --title "${{ steps.tag.outputs.tag }}" \
+            --generate-notes
