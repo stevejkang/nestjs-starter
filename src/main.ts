@@ -3,6 +3,7 @@ import helmet from 'helmet';
 import { ValidationPipe } from '@nestjs/common';
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AllExceptionsFilter } from '@shared/filters/AllExceptionsFilter';
+import { CoreResponseInterceptor } from '@shared/interceptors/CoreResponseInterceptor';
 import { HttpLoggingInterceptor } from '@shared/interceptors/HttpLoggingInterceptor';
 import CLIENT_URL_WHITELIST from '@shared/config/ClientURLWhitelist';
 import { IS_PRODUCTION } from '@shared/config/config';
@@ -19,7 +20,7 @@ async function bootstrap(): Promise<void> {
 
   const httpAdapterHost = app.get(HttpAdapterHost);
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapterHost));
-  app.useGlobalInterceptors(new HttpLoggingInterceptor());
+  app.useGlobalInterceptors(new CoreResponseInterceptor(), new HttpLoggingInterceptor());
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
