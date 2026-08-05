@@ -53,12 +53,23 @@ jobs:
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
           echo "Release tag: ${TAG}"
 
+      - name: Create local tag
+        if: steps.changes.outputs.has_changes == 'true'
+        run: git tag ${{ steps.tag.outputs.tag }}
+
+      - name: Generate release notes
+        if: steps.changes.outputs.has_changes == 'true'
+        uses: orhun/git-cliff-action@v4
+        id: changelog
+        with:
+          config: cliff.toml
+          args: --latest --strip header
+
       - name: Create release
         if: steps.changes.outputs.has_changes == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release create "${{ steps.tag.outputs.tag }}" \
-            --target main \
-            --title "${{ steps.tag.outputs.tag }}" \
-            --generate-notes
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: ${{ steps.tag.outputs.tag }}
+          body: ${{ steps.changelog.outputs.content }}
+          draft: false

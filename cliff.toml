@@ -1,0 +1,103 @@
+[changelog]
+header = """
+# Changelog\n
+"""
+body = """
+{% if version %}\
+    ## [{{ version }}]
+{% else %}\
+    ## [unreleased]
+{% endif %}\
+{% for group, commits in commits | group_by(attribute="group") %}
+    ### {{ group | striptags | trim | upper_first }}
+    {% for commit in commits %}
+        - {% if commit.scope %}*({{ commit.scope }})* {% endif %}\
+            {% if commit.breaking %}[**breaking**] {% endif %}\
+            {{ commit.message | upper_first }}\
+            {% for link in commit.links %} ({{ link.href }}){% endfor %}\
+    {% endfor %}
+{% endfor %}\n
+"""
+trim = true
+footer = ""
+postprocessors = []
+
+[git]
+conventional_commits = true
+filter_unconventional = false
+split_commits = false
+sort_commits = "oldest"
+tag_pattern = "v\\d+\\.\\d{4}\\.\\d+"
+
+commit_parsers = [
+    # Conventional commits
+    { message = "^feat", group = "<!-- 0 -->✨ Features" },
+    { message = "^fix", group = "<!-- 1 -->🐛 Bug Fixes" },
+    { message = "^refactor", group = "<!-- 2 -->♻️ Refactoring" },
+    { message = "^perf", group = "<!-- 3 -->⚡ Performance" },
+    { message = "^test", group = "<!-- 4 -->🧪 Tests" },
+    { message = "^docs", group = "<!-- 5 -->📝 Documentation" },
+    { message = "^style", group = "<!-- 6 -->🎨 Style" },
+    { message = "^chore\\(deps\\)", group = "<!-- 8 -->📦 Dependencies" },
+    { message = "^chore|^ci", group = "<!-- 7 -->⚙️ Chores" },
+
+    # Skip noise
+    { message = "\\[skip ci\\]", skip = true },
+    { message = "^Merge", skip = true },
+    { message = "^Initial commit$", skip = true },
+
+    # --- Non-conventional (order matters: specific patterns BEFORE general ones) ---
+
+    # Dependencies (BEFORE general "Add " / "Update ")
+    { message = "^Update dependency ", group = "<!-- 8 -->📦 Dependencies" },
+    { message = "^Update .+ monorepo", group = "<!-- 8 -->📦 Dependencies" },
+    { message = "^Update dependencies$", group = "<!-- 8 -->📦 Dependencies" },
+    { message = "^(Update|Migrate) pnpm", group = "<!-- 8 -->📦 Dependencies" },
+    { message = "^Bump ", group = "<!-- 8 -->📦 Dependencies" },
+    { message = "^Lock (file maintenance|npm dependencies)", group = "<!-- 8 -->📦 Dependencies" },
+    { message = "^Update pnpm-lock", group = "<!-- 8 -->📦 Dependencies" },
+    { message = "^Install missing ", group = "<!-- 8 -->📦 Dependencies" },
+
+    # Documentation (BEFORE general "Add " / "Update ")
+    { message = "^(Add|Update) (README|AGENTS\\.md|CLAUDE\\.md|CHANGELOG|LICENSE)", group = "<!-- 5 -->📝 Documentation" },
+    { message = "^Document ", group = "<!-- 5 -->📝 Documentation" },
+
+    # CI / infrastructure (BEFORE general "Add " / "Update ")
+    { message = "^Update actions/", group = "<!-- 7 -->⚙️ Chores" },
+    { message = "^Update Node", group = "<!-- 7 -->⚙️ Chores" },
+    { message = "^(Add|Update) .+ workflow", group = "<!-- 7 -->⚙️ Chores" },
+    { message = "^(Add|Update) .+ to (gitignore|dockerignore)", group = "<!-- 7 -->⚙️ Chores" },
+    { message = "^Add (renovate|Renovate)", group = "<!-- 7 -->⚙️ Chores" },
+    { message = "^Pin ", group = "<!-- 7 -->⚙️ Chores" },
+
+    # Style / formatting (BEFORE general "Fix ")
+    { message = "^(Apply|Fix) Prettier", group = "<!-- 6 -->🎨 Style" },
+    { message = "^(Fix|Resolve|Add) (lint|ESLint)", group = "<!-- 6 -->🎨 Style" },
+    { message = "^Enforce single quotes", group = "<!-- 6 -->🎨 Style" },
+    { message = "^Update sql format", group = "<!-- 6 -->🎨 Style" },
+
+    # Refactoring
+    { message = "^(Refactor|Restructure|Redesign|Rewrite|Overhaul|Revamp|Simplify|Restyle|Rebrand) ", group = "<!-- 2 -->♻️ Refactoring" },
+    { message = "^(Replace|Rename|Move|Extract|Convert|Migrate|Split) ", group = "<!-- 2 -->♻️ Refactoring" },
+    { message = "^(Improve|Refine|Polish|Strengthen|Enhance|Enrich|Standardize|Unify) ", group = "<!-- 2 -->♻️ Refactoring" },
+
+    # Bug fixes
+    { message = "^(Fix|Prevent|Resolve|Correct|Block) ", group = "<!-- 1 -->🐛 Bug Fixes" },
+
+    # Performance
+    { message = "^(Throttle|Optimize|Downsize) ", group = "<!-- 3 -->⚡ Performance" },
+
+    # Features
+    { message = "^(Add|Introduce|Implement|Integrate) ", group = "<!-- 0 -->✨ Features" },
+    { message = "^(Wire|Register|Bootstrap|Initialize) ", group = "<!-- 0 -->✨ Features" },
+    { message = "^(Support|Persist|Expose|Expand|Extend) ", group = "<!-- 0 -->✨ Features" },
+
+    # Chores (catch-all for remaining patterns)
+    { message = "^(Remove|Hide|Skip|Disable|Enable) ", group = "<!-- 7 -->⚙️ Chores" },
+    { message = "^(Configure|Set up|Change|Exclude|Edit) ", group = "<!-- 7 -->⚙️ Chores" },
+    { message = "^Update ", group = "<!-- 7 -->⚙️ Chores" },
+]
+
+link_parsers = [
+    { pattern = "#(\\d+)", href = "https://github.com/stevejkang/nestjs-starter/pull/$1" },
+]
