@@ -43,6 +43,24 @@ function createTestService(client: CacheClient) {
   return new TestService();
 }
 
+/** Each caller must pass a unique `prefix`: the inflight registry is shared process-wide. */
+function createSpyService(
+  client: CacheClient,
+  spy: jest.Mock,
+  prefix: string,
+): { getData(key: string): Promise<unknown> } {
+  class TestService {
+    [CACHE_CLIENT] = client;
+
+    @MethodCache({ prefix, ttlSeconds: 60 })
+    async getData(key: string): Promise<unknown> {
+      return spy(key);
+    }
+  }
+
+  return new TestService();
+}
+
 describe('MethodCache', () => {
   describe('cache hit', () => {
     it('should return cached value without calling the original method', async () => {
@@ -193,6 +211,189 @@ describe('MethodCache', () => {
         id: '1',
         name: 'User 1',
       });
+    });
+  });
+
+  describe('coalescing failure paths', () => {
+    it('should propagate the same error to every concurrent waiter', async () => {
+      const client = createMockClient();
+      const spy = jest.fn().mockRejectedValue(new Error('DB_FAIL'));
+      const service = createSpyService(client, spy, 'coalesce-error');
+
+      const results = await Promise.allSettled([
+        service.getData('k'),
+        service.getData('k'),
+        service.getData('k'),
+      ]);
+
+      for (const result of results) {
+        expect(result.status).toBe('rejected');
+        if (result.status === 'rejected') {
+          expect((result.reason as Error).message).toBe('DB_FAIL');
+        }
+      }
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not cache the result when the method rejects', async () => {
+      const client = createMockClient();
+      const spy = jest.fn().mockRejectedValue(new Error('DB_FAIL'));
+      const service = createSpyService(client, spy, 'coalesce-no-cache');
+
+      await expect(service.getData('k')).rejects.toThrow('DB_FAIL');
+
+      expect(client.set).not.toHaveBeenCalled();
+      expect(client.sadd).not.toHaveBeenCalled();
+    });
+
+    it('should clean up inflight after a rejection so the next call retries', async () => {
+      const client = createMockClient();
+      const spy = jest
+        .fn()
+        .mockRejectedValueOnce(new Error('DB_FAIL'))
+        .mockResolvedValueOnce({ ok: true });
+      const service = createSpyService(client, spy, 'retry-after-failure');
+
+      await expect(service.getData('k')).rejects.toThrow('DB_FAIL');
+      await expect(service.getData('k')).resolves.toEqual({ ok: true });
+
+      expect(spy).toHaveBeenCalledTimes(2);
+    });
+
+    it('should clean up inflight after success so a later cache miss re-executes', async () => {
+      const client = createMockClient();
+      const spy = jest.fn().mockResolvedValue({ ok: true });
+      const service = createSpyService(client, spy, 'retry-after-success');
+
+      await service.getData('k');
+      await service.getData('k');
+
+      expect(spy).toHaveBeenCalledTimes(2);
+    });
+
+    it('should clean up inflight when the cache write fails', async () => {
+      const client = createMockClient({
+        set: jest.fn().mockRejectedValue(new Error('Redis write failed')),
+      });
+      const spy = jest.fn().mockResolvedValue({ ok: true });
+      const service = createSpyService(client, spy, 'retry-after-set-failure');
+
+      await expect(service.getData('k')).resolves.toEqual({ ok: true });
+      await expect(service.getData('k')).resolves.toEqual({ ok: true });
+
+      expect(spy).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('independent cache keys', () => {
+    it('should execute concurrent calls with different keys independently', async () => {
+      const client = createMockClient();
+      const spy = jest.fn().mockImplementation((key: string) => Promise.resolve({ key }));
+      const service = createSpyService(client, spy, 'independent');
+
+      const [first, second] = await Promise.all([
+        service.getData('a'),
+        service.getData('b'),
+      ]);
+
+      expect(first).toEqual({ key: 'a' });
+      expect(second).toEqual({ key: 'b' });
+      expect(spy).toHaveBeenCalledTimes(2);
+    });
+
+    it('should write a separate cache entry per key', async () => {
+      const client = createMockClient();
+      const spy = jest.fn().mockImplementation((key: string) => Promise.resolve({ key }));
+      const service = createSpyService(client, spy, 'independent-keys');
+
+      await Promise.all([service.getData('a'), service.getData('b')]);
+
+      expect(client.set).toHaveBeenCalledWith(
+        'independent-keys:a',
+        JSON.stringify({ key: 'a' }),
+        60,
+      );
+      expect(client.set).toHaveBeenCalledWith(
+        'independent-keys:b',
+        JSON.stringify({ key: 'b' }),
+        60,
+      );
+    });
+  });
+
+  describe('corrupt cached value', () => {
+    it('should fall back to the original method when cached JSON is malformed', async () => {
+      const client = createMockClient({
+        get: jest.fn().mockResolvedValue('not-valid-json{{{'),
+      });
+      const spy = jest.fn().mockResolvedValue({ ok: true });
+      const service = createSpyService(client, spy, 'corrupt');
+
+      const result = await service.getData('k');
+
+      expect(result).toEqual({ ok: true });
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should overwrite the corrupt entry with the fresh result', async () => {
+      const client = createMockClient({
+        get: jest.fn().mockResolvedValue('not-valid-json{{{'),
+      });
+      const spy = jest.fn().mockResolvedValue({ ok: true });
+      const service = createSpyService(client, spy, 'corrupt-overwrite');
+
+      await service.getData('k');
+
+      expect(client.set).toHaveBeenCalledWith(
+        'corrupt-overwrite:k',
+        JSON.stringify({ ok: true }),
+        60,
+      );
+    });
+
+    it('should fall back to the original method when a custom deserializer throws', async () => {
+      const client = createMockClient({
+        get: jest.fn().mockResolvedValue(JSON.stringify({ ok: true })),
+      });
+      const spy = jest.fn().mockResolvedValue({ ok: 'from-origin' });
+
+      class TestService {
+        [CACHE_CLIENT] = client;
+
+        @MethodCache({
+          prefix: 'bad-deserializer',
+          ttlSeconds: 60,
+          deserialize: () => {
+            throw new Error('deserialize blew up');
+          },
+        })
+        async getData(key: string): Promise<unknown> {
+          return spy(key);
+        }
+      }
+
+      const result = await new TestService().getData('k');
+
+      expect(result).toEqual({ ok: 'from-origin' });
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('null return values', () => {
+    it('should cache a null result and serve it from cache without re-executing', async () => {
+      const client = createMockClient();
+      const spy = jest.fn().mockResolvedValue(null);
+      const service = createSpyService(client, spy, 'nullable');
+
+      const firstResult = await service.getData('k');
+      expect(firstResult).toBeNull();
+      expect(client.set).toHaveBeenCalledWith('nullable:k', 'null', 60);
+
+      (client.get as jest.Mock).mockResolvedValue('null');
+      const secondResult = await service.getData('k');
+
+      expect(secondResult).toBeNull();
+      expect(spy).toHaveBeenCalledTimes(1);
     });
   });
 });
