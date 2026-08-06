@@ -6,7 +6,7 @@ export class PasswordHandler {
     memoryCost: 2 ** 16,
     timeCost: 3,
     parallelism: 1,
-  };
+  } as const;
 
   static async hashPassword(password: string): Promise<string> {
     try {
