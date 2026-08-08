@@ -1,3 +1,4 @@
+import { clearLocalCache } from '../LocalCache';
 import { MethodCache } from '../RedisCacheDecorator';
 import { CacheClient, CACHE_CLIENT } from '../interfaces';
 
@@ -16,12 +17,12 @@ function createTestService(client: CacheClient) {
   class TestService {
     [CACHE_CLIENT] = client;
 
-    @MethodCache({ prefix: 'user', ttlSeconds: 60 })
+    @MethodCache({ prefix: 'user', ttlSeconds: 60, localCacheTtlSeconds: 0 })
     async getUser(id: string): Promise<{ id: string; name: string }> {
       return { id, name: `User ${id}` };
     }
 
-    @MethodCache({ prefix: 'item', ttlSeconds: 30, keyArgs: [0] })
+    @MethodCache({ prefix: 'item', ttlSeconds: 30, keyArgs: [0], localCacheTtlSeconds: 0 })
     async getItem(id: number, _locale: string): Promise<{ id: number }> {
       return { id };
     }
@@ -34,6 +35,7 @@ function createTestService(client: CacheClient) {
         parsed.deserialized = true;
         return parsed;
       },
+      localCacheTtlSeconds: 0,
     })
     async getCustom(key: string): Promise<{ key: string }> {
       return { key };
@@ -52,7 +54,7 @@ function createSpyService(
   class TestService {
     [CACHE_CLIENT] = client;
 
-    @MethodCache({ prefix, ttlSeconds: 60 })
+    @MethodCache({ prefix, ttlSeconds: 60, localCacheTtlSeconds: 0 })
     async getData(key: string): Promise<unknown> {
       return spy(key);
     }
@@ -62,6 +64,8 @@ function createSpyService(
 }
 
 describe('MethodCache', () => {
+  beforeEach(() => clearLocalCache());
+
   describe('cache hit', () => {
     it('should return cached value without calling the original method', async () => {
       const cachedValue = JSON.stringify({ id: '1', name: 'Cached User' });
@@ -146,7 +150,7 @@ describe('MethodCache', () => {
   describe('without cache client', () => {
     it('should execute method and return result without caching', async () => {
       class NoCacheService {
-        @MethodCache({ prefix: 'user', ttlSeconds: 60 })
+        @MethodCache({ prefix: 'user', ttlSeconds: 60, localCacheTtlSeconds: 0 })
         async getUser(id: string): Promise<{ id: string; name: string }> {
           return { id, name: `User ${id}` };
         }
@@ -160,7 +164,7 @@ describe('MethodCache', () => {
 
     it('should handle concurrent calls without cache client', async () => {
       class NoCacheService {
-        @MethodCache({ prefix: 'user', ttlSeconds: 60 })
+        @MethodCache({ prefix: 'user', ttlSeconds: 60, localCacheTtlSeconds: 0 })
         async getUser(id: string): Promise<{ id: string; name: string }> {
           return { id, name: `User ${id}` };
         }
@@ -366,6 +370,7 @@ describe('MethodCache', () => {
           deserialize: () => {
             throw new Error('deserialize blew up');
           },
+          localCacheTtlSeconds: 0,
         })
         async getData(key: string): Promise<unknown> {
           return spy(key);
