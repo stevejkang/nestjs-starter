@@ -1,5 +1,6 @@
 import { InvalidateMethodCache } from '../InvalidateCacheDecorator';
 import { CacheClient, CACHE_CLIENT } from '../interfaces';
+import { clearLocalCache, localCacheGet, localCacheSet } from '../LocalCache';
 
 function createMockClient(overrides: Partial<CacheClient> = {}): CacheClient {
   return {
@@ -31,6 +32,8 @@ function createTestService(client: CacheClient) {
 }
 
 describe('InvalidateMethodCache', () => {
+  beforeEach(() => clearLocalCache());
+
   describe('single prefix invalidation', () => {
     it('should delete all cached keys for the given prefix', async () => {
       const client = createMockClient({
@@ -123,6 +126,74 @@ describe('InvalidateMethodCache', () => {
       const service = createTestService(client);
 
       await expect(service.deleteAccount('1')).resolves.toBeUndefined();
+    });
+  });
+
+  describe('local cache invalidation', () => {
+    it('should clear matching local cache entries for a single prefix', async () => {
+      localCacheSet('user:1', '"v"', 60, 60);
+      localCacheSet('profile:1', '"v"', 60, 60);
+
+      const client = createMockClient();
+      const service = createTestService(client);
+      await service.updateUser('1', 'Alice');
+
+      expect(localCacheGet('user:1')).toBeUndefined();
+      expect(localCacheGet('profile:1')).toBeDefined();
+    });
+
+    it('should clear local cache entries for multiple prefixes', async () => {
+      localCacheSet('user:1', '"v"', 60, 60);
+      localCacheSet('profile:1', '"v"', 60, 60);
+
+      const client = createMockClient();
+      const service = createTestService(client);
+      await service.deleteAccount('1');
+
+      expect(localCacheGet('user:1')).toBeUndefined();
+      expect(localCacheGet('profile:1')).toBeUndefined();
+    });
+
+    it('should not clear keys that merely start with the prefix string without a colon separator', async () => {
+      localCacheSet('user-profile:1', '"v"', 60, 60);
+      localCacheSet('user', '"v"', 60, 60);
+
+      const client = createMockClient();
+      const service = createTestService(client);
+      await service.updateUser('1', 'Alice');
+
+      expect(localCacheGet('user-profile:1')).toBeDefined();
+      expect(localCacheGet('user')).toBeUndefined();
+    });
+
+    it('should clear local cache entries even without a cache client', async () => {
+      localCacheSet('user:1', '"v"', 60, 60);
+
+      class ClientlessService {
+        @InvalidateMethodCache({ prefixes: 'user' })
+        async updateUser(id: string, name: string): Promise<{ id: string; name: string }> {
+          return { id, name };
+        }
+      }
+
+      const service = new ClientlessService();
+      const result = await service.updateUser('1', 'Alice');
+
+      expect(localCacheGet('user:1')).toBeUndefined();
+      expect(result).toEqual({ id: '1', name: 'Alice' });
+    });
+
+    it('should have already cleared local cache even when Redis smembers fails', async () => {
+      localCacheSet('user:1', '"v"', 60, 60);
+
+      const client = createMockClient({
+        smembers: jest.fn().mockRejectedValue(new Error('Redis read error')),
+      });
+      const service = createTestService(client);
+      const result = await service.updateUser('1', 'Alice');
+
+      expect(localCacheGet('user:1')).toBeUndefined();
+      expect(result).toEqual({ id: '1', name: 'Alice' });
     });
   });
 });

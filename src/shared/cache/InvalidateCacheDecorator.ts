@@ -1,5 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { CacheClient, CACHE_CLIENT, InvalidateMethodCacheOptions } from './interfaces';
+import { clearLocalCache } from './LocalCache';
 
 const logger = new Logger('InvalidateMethodCache');
 
@@ -15,6 +16,8 @@ export function InvalidateMethodCache(options: InvalidateMethodCacheOptions) {
 
     (descriptor as TypedPropertyDescriptor<unknown>).value = async function (this: Record<string | symbol, unknown>, ...args: unknown[]): Promise<unknown> {
       const result = await original.apply(this, args);
+
+      for (const prefix of prefixes) clearLocalCache(prefix);
 
       const client = this[CACHE_CLIENT] as CacheClient | undefined;
       if (!client) return result;
