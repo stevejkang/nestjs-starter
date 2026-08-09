@@ -10,7 +10,7 @@ import {
   ConflictException,
   HttpStatus,
 } from '@nestjs/common';
-import { CacheClient, CACHE_CLIENT } from '../cache/interfaces';
+import { CacheClient, CACHE_CLIENT } from '../modules/cache/interfaces';
 
 const PROCESSING_MARKER = '__processing__';
 const PROCESSING_TTL_SECONDS = 300;

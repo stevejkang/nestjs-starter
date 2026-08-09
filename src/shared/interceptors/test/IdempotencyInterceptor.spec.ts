@@ -1,7 +1,7 @@
 import { of, lastValueFrom } from 'rxjs';
 import { CallHandler, ConflictException, ExecutionContext, HttpStatus } from '@nestjs/common';
 import { IdempotencyInterceptor } from '../IdempotencyInterceptor';
-import { CacheClient } from '../../cache/interfaces';
+import { CacheClient } from '../../modules/cache/interfaces';
 
 function createMockCacheClient(overrides: Partial<CacheClient> = {}): jest.Mocked<CacheClient> {
   return {
