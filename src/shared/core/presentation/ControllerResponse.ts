@@ -2,6 +2,14 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class ControllerResponseErrorObject {
   @ApiProperty({
+    name: 'name',
+    description: 'Error class name (e.g., "BadRequestException", "Error")',
+    required: true,
+    example: 'BadRequestException',
+  })
+  name: string;
+
+  @ApiProperty({
     name: 'message',
     description: 'An error message',
     required: true,

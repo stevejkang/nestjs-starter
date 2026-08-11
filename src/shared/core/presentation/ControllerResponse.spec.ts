@@ -25,6 +25,7 @@ describe('ControllerResponse', () => {
     controllerResponseOnError.path = 'path';
     controllerResponseOnError.ok = true;
     controllerResponseOnError.error = {
+      name: 'BadRequestException',
       message: 'message',
       stack: ['stack'],
     };
