@@ -853,6 +853,12 @@ Environment variables are loaded via `dotenv` in `src/shared/config/config.ts`. 
 
 > When `NODE_ENV=test` (Jest default), the `required()` helper in `config.ts` skips missing-variable errors so tests can run without a full `.env` file.
 
+### Optional Config Keys
+
+`optional<T>(key, default)` keys (`AES_ENCRYPTION_KEY`, `HMAC_PEPPER`) fall back to safe defaults for local/test — override in production. Unlike `required<T>()`, `optional<T>()` treats empty-string values as absent and returns the default (this matters because the deployment pipeline's `envsubst` step renders unlisted keys as `''`).
+
+New env keys must be added **both** to `.env.example` (envsubst format: `KEY=${KEY}`) **and** the `env:` allowlist in `.github/workflows/deployment.yml`, or production renders them as empty strings.
+
 ---
 
 ## Path Aliases

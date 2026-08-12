@@ -76,6 +76,8 @@ jobs:
           MYSQL_USER: ${{ secrets.MYSQL_USER }}
           MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
           MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+          AES_ENCRYPTION_KEY: ${{ secrets.AES_ENCRYPTION_KEY }}
+          HMAC_PEPPER: ${{ secrets.HMAC_PEPPER }}
         run: |
           cat .env.example | envsubst > .env
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .

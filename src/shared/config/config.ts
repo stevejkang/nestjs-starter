@@ -28,9 +28,20 @@ function required<T>(key: string, defaultValue?: string): T {
   return process.env[key] as T || defaultValue as T;
 }
 
+function optional<T>(key: string, defaultValue: T): T {
+  const value = process.env[key];
+  if (typeof value === 'string' && value !== '') {
+    return value as T;
+  }
+  return defaultValue;
+}
+
 export const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 export const IS_TEST = process.env.NODE_ENV === 'test';
 export const IS_LOCAL = process.env.NODE_ENV ? process.env.NODE_ENV.toString().startsWith('local') : false;
+
+export const DEFAULT_AES_ENCRYPTION_KEY = '0'.repeat(64);
+export const DEFAULT_HMAC_PEPPER = 'nestjs-starter-hmac-pepper';
 
 export const config = {
   NODE_ENV: required<string>('NODE_ENV'),
@@ -42,6 +53,8 @@ export const config = {
     DATABASE: required<string>('MYSQL_DATABASE'),
   },
   JWT_SECRET: required<string>('JWT_SECRET'),
+  AES_ENCRYPTION_KEY: optional<string>('AES_ENCRYPTION_KEY', DEFAULT_AES_ENCRYPTION_KEY),
+  HMAC_PEPPER: optional<string>('HMAC_PEPPER', DEFAULT_HMAC_PEPPER),
 };
 
 console.log(`[CONFIGURATION] Initialized from ${getEnvironmentFilePath()}`);
