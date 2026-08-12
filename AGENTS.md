@@ -737,6 +737,8 @@ Stack traces are included only in non-production environments.
   - `@DateTimeColumn()` — MySQL `DATETIME` ↔ JS `Date` with timezone-safe transformer
   - `@DateColumn()` — MySQL `DATE` ↔ JS `Date` (date-only, no time component)
   - `@BooleanIntegerColumn()` — MySQL `TINYINT(1)` ↔ `BooleanInteger` enum (`1`/`0`)
+  - `@BigIntColumn()` — MySQL `BIGINT UNSIGNED` ↔ JS `number`
+  - `@BigIntPrimaryColumn()` — auto-increment BIGINT primary key
 - Boolean fields stored as `number` (use `BooleanInteger` enum: `TRUE = 1`, `FALSE = 0`)
 
 ### Query Builders
