@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { TraceIdIssuanceMiddleware, TRACE_ID_HEADER_KEY } from '../TraceIdIssuanceMiddleware';
 import { Snowflake } from '../../common/Snowflake';
+import { RequestContext } from '../../context/RequestContext';
 
 jest.mock('../../common/Snowflake');
 
@@ -87,5 +88,23 @@ describe('TraceIdIssuanceMiddleware', () => {
     await middleware.use(request, response, nextFn);
 
     expect(mockedSnowflake.generate).toHaveBeenCalledTimes(1);
+  });
+
+  it('should make RequestContext.getTraceId() return the issued traceId inside the next() callback', async () => {
+    const request = createMockRequest();
+    const { response } = createMockResponse();
+
+    let traceIdInsideNext = '';
+    const nextCapture = jest.fn(() => {
+      traceIdInsideNext = RequestContext.getTraceId();
+    });
+
+    await middleware.use(request, response, nextCapture);
+
+    expect(traceIdInsideNext).toBe('7060530237620224000');
+  });
+
+  it('should return empty string from RequestContext.getTraceId() outside any run scope', () => {
+    expect(RequestContext.getTraceId()).toBe('');
   });
 });

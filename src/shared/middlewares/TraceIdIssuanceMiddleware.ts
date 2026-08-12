@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Snowflake } from '../common/Snowflake';
+import { RequestContext } from '../context/RequestContext';
 
 export const TRACE_ID_HEADER_KEY = 'X-Trace-Id';
 
@@ -12,6 +13,8 @@ export class TraceIdIssuanceMiddleware implements NestMiddleware {
     request.headers[TRACE_ID_HEADER_KEY] = traceId;
     response.setHeader(TRACE_ID_HEADER_KEY, traceId);
 
-    next();
+    RequestContext.run({ traceId }, () => {
+      next();
+    });
   }
 }

@@ -144,6 +144,7 @@ src/
   shared/                    # Shared kernel
     common/                  # ExternalId, Semaphore, Snowflake, TimeUnit
     config/                  # Configuration and Swagger setup
+    context/                 # RequestContext (AsyncLocalStorage-based traceId propagation)
     core/                    # Core building blocks
       application/           # UseCase interface, CoreResponse, Facade base
       domain/                # AggregateRoot, ValueObject, Result, DomainEvent, Identifier, UniqueEntityID, BooleanInteger
@@ -789,6 +790,10 @@ Public-facing IDs use `ExternalId` (Base62 encoded with entity-type-specific alp
 ### Trace ID
 
 - `TraceIdIssuanceMiddleware` — assigns a Snowflake-based trace ID to every request
+
+### Request Context
+
+- `RequestContext` — AsyncLocalStorage-based traceId propagation; `RequestContext.getTraceId()` works anywhere in the request's async call chain without a request object (use it where no `request` is available, e.g. outbound HTTP client logging)
 
 ---
 
