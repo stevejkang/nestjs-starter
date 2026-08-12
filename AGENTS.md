@@ -841,6 +841,10 @@ Custom global validation pipe (registered in `main.ts`) that extends NestJS's `V
 
 - `AesEncryptionHandler` — AES-256-GCM for sensitive values at rest (all methods static): `encrypt()` → `iv:authTag:ciphertext` (base64), `decrypt()` verifies the auth tag (tamper-evident). Key from `config.AES_ENCRYPTION_KEY` (64 hex chars) — override the default in production
 
+### HMAC
+
+- `HmacHandler` — HMAC-SHA256 hashing with timing-safe comparison (all methods static). Pepper from `config.HMAC_PEPPER` (per-call override supported) — override the default in production. NOTE: changing the pepper invalidates all previously stored hashes (no rotation mechanism)
+
 ---
 
 ## Environment Configuration
