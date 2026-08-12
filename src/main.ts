@@ -1,10 +1,10 @@
 import { initializeTransactionalContext } from 'typeorm-transactional';
 import helmet from 'helmet';
-import { ValidationPipe } from '@nestjs/common';
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AllExceptionsFilter } from '@shared/filters/AllExceptionsFilter';
 import { CoreResponseInterceptor } from '@shared/interceptors/CoreResponseInterceptor';
 import { HttpLoggingInterceptor } from '@shared/interceptors/HttpLoggingInterceptor';
+import { AppValidationPipe } from '@shared/pipes/AppValidationPipe';
 import CLIENT_URL_WHITELIST from '@shared/config/ClientURLWhitelist';
 import { IS_PRODUCTION } from '@shared/config/config';
 import { initializeSwaggerDocument } from '@shared/config/swagger.config';
@@ -22,7 +22,7 @@ async function bootstrap(): Promise<void> {
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapterHost));
   app.useGlobalInterceptors(new CoreResponseInterceptor(), new HttpLoggingInterceptor());
   app.useGlobalPipes(
-    new ValidationPipe({
+    new AppValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,

@@ -156,7 +156,7 @@ src/
     modules/
       cache/                 # MethodCache, InvalidateMethodCache decorators, CacheKeyBuilder, LocalCache, RedisCacheModule
       distributed-lock/      # Redis-based distributed locking (DistributedLockService)
-    pipes/                   # ParseExternalIdPipe
+    pipes/                   # ParseExternalIdPipe, AppValidationPipe
     security/                # PasswordHandler (Argon2)
     typeorm/                 # Custom TypeORM column decorators/transformers
 scheme/
@@ -350,6 +350,7 @@ export class MysqlUserRepository implements UserRepository {
 - Inject use cases or facades via constructor
 - Controllers are exempt from `explicit-function-return-type` ESLint rule
 - Use `@UseGuards(JwtAuthenticationGuard)` for authenticated routes
+- The global validation pipe is `AppValidationPipe` (registered in `main.ts`). Unlike the built-in `ValidationPipe`, it does **not** auto-coerce `@Param` or `@Query` values based on TypeScript metatypes. This means `@Param('id') id: number` will receive a **string** at runtime despite the `number` annotation — route params and query params must use an explicit pipe (`ParseExternalIdPipe`, `ParseIntPipe`, etc.) to convert types.
 - Use `ParseExternalIdPipe` to decode public-facing ExternalId parameters
 - For HTTP method, status code, and response body rules, see **REST API Conventions** below
 
@@ -751,6 +752,10 @@ Stack traces are included only in non-production environments.
 ### ExternalId
 
 Public-facing IDs use `ExternalId` (Base62 encoded with entity-type-specific alphabet shuffling). Never expose raw database IDs in APIs — always encode via `ExternalId.encode(id, entityType)` and decode via `ParseExternalIdPipe` in controllers.
+
+### AppValidationPipe
+
+Custom global validation pipe (registered in `main.ts`) that extends NestJS's `ValidationPipe`. Skips implicit primitive type coercion for `@Param` and `@Query` metadata types so that custom pipes like `ParseExternalIdPipe` receive the raw string value from the URL. Class-typed DTOs (body and non-primitive query DTOs) are still validated and transformed normally via `super.transform()`.
 
 ### Cache (Redis)
 
