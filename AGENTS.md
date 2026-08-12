@@ -837,6 +837,10 @@ Custom global validation pipe (registered in `main.ts`) that extends NestJS's `V
 - Use `JwtAuthenticationGuard` for protected routes
 - Token validation in `JwtStrategy` (Passport custom strategy)
 
+### Encryption
+
+- `AesEncryptionHandler` — AES-256-GCM for sensitive values at rest (all methods static): `encrypt()` → `iv:authTag:ciphertext` (base64), `decrypt()` verifies the auth tag (tamper-evident). Key from `config.AES_ENCRYPTION_KEY` (64 hex chars) — override the default in production
+
 ---
 
 ## Environment Configuration
