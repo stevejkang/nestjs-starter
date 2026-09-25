@@ -61,9 +61,15 @@ Before committing or opening a PR, verify the following:
 - **Keep commits semantic and focused** — each commit should represent one logically complete unit of work. Do not batch unrelated changes.
 - **Commit immediately when a unit of work is done** — do not accumulate changes across multiple tasks. As soon as an individual piece of work is complete and passes verification, commit it.
 - **Every commit must be CI-passing** — each individual commit must be in a state where the CI pipeline (build, lint, typecheck, tests) would pass. Never create a commit that would break CI, even if a subsequent commit would fix it.
-- **Commits are merged as-is** — PRs use rebase merge (no squash). Every commit lands on `main` individually, so each must be a meaningful, self-contained unit that makes sense on its own in the main branch history. Commit messages and code comments should be written from the perspective of the final state (post-merge to main) — avoid intermediate decisions, session-specific context, or planning artifacts that lose meaning once merged.
 - **Single author per commit** — always commit under the configured repository author. Co-authored commits (`Co-authored-by:`) are not allowed except in explicitly agreed exceptional cases.
 - **All commits must be signed** (`git commit -S`). Unsigned commits will not be accepted.
+- **Commit Perspective** — all commits must follow the Commit Perspective rules defined below.
+
+### Commit Perspective
+
+Commits are merged as-is via rebase merge (no squash). Every commit lands on `main` individually — each must be a meaningful, self-contained unit that makes sense on its own in the main branch history.
+
+Never include ephemeral context in commit messages or bodies: internal planning references (e.g., `Wave 1`, `T-3`, `Task 2`), session-specific discussions, or intermediate decisions lose meaning once merged to main. Only real issue/ticket numbers (e.g., `#123`, `PROJ-456`) belong in commits. Write commit messages from the perspective of the final state, not the journey.
 
 ### Commit Messages
 
@@ -77,8 +83,8 @@ Remove unused Redis cache keys
 ```
 
 - Keep subject line under 72 characters.
-- Always add a body when possible (blank line after subject). Explain **why** the change was made, not just what. The more context, the better.
-- **Never include internal planning references** (e.g., `Wave 1`, `T-3`, `Task 2`) in commit messages or bodies. These are ephemeral planning artifacts that lose meaning once merged to main. Only real issue/ticket numbers (e.g., `#123`, `PROJ-456`) belong in commits.
+- Wrap body lines at 72 characters.
+- Always add a body when possible (blank line after subject). Explain **why** the change was made, not just what. Be specific but concise.
 
 ### Commit Squashing / Rebasing
 
