@@ -44,7 +44,7 @@ Before committing or opening a PR, verify the following:
 1. **Conventions followed** — all changes comply with the guidelines defined in this file (Key Architectural Patterns, REST API Conventions, Code Style Guidelines, etc.)
 2. **Tests added** — appropriate unit tests are written for new or changed logic
 3. **Commit discipline** — commits follow the rules in Commit & PR Rules (meaningful units, signed, proper messages)
-4. **CI expected to pass** — all checks that run in CI workflows (build, lint, typecheck, tests) pass locally before pushing
+4. **CI expected to pass** — all checks that run in CI workflows (build, format, lint, typecheck, tests) pass locally before pushing
 
 ### 3. Respect .gitignore
 
@@ -60,7 +60,7 @@ Before committing or opening a PR, verify the following:
 
 - **Keep commits semantic and focused** — each commit should represent one logically complete unit of work. Do not batch unrelated changes.
 - **Commit immediately when a unit of work is done** — do not accumulate changes across multiple tasks. As soon as an individual piece of work is complete and passes verification, commit it.
-- **Every commit must be CI-passing** — each individual commit must be in a state where the CI pipeline (build, lint, typecheck, tests) would pass. Never create a commit that would break CI, even if a subsequent commit would fix it.
+- **Every commit must be CI-passing** — each individual commit must be in a state where the CI pipeline (build, format, lint, typecheck, tests) would pass. Never create a commit that would break CI, even if a subsequent commit would fix it.
 - **Single author per commit** — always commit under the configured repository author. Co-authored commits (`Co-authored-by:`) are not allowed except in explicitly agreed exceptional cases.
 - **All commits must be signed** (`git commit -S`). Unsigned commits will not be accepted.
 - **Commit Perspective** — all commits must follow the Commit Perspective rules defined below.
@@ -354,7 +354,7 @@ export class MysqlUserRepository implements UserRepository {
 - Add Swagger decorators: `@ApiTags()`, `@ApiOperation()`, `@ApiOkResponse()`, `@ApiCreatedResponse()` (for POST that creates resources)
 - Response format: `{ traceId, statusCode, timestamp, path, ok, result }`
 - Inject use cases or facades via constructor
-- Controllers are exempt from `explicit-function-return-type` ESLint rule
+- Controllers are exempt from the `explicit-function-return-type` lint rule
 - Use `@UseGuards(JwtAuthenticationGuard)` for authenticated routes
 - The global validation pipe is `AppValidationPipe` (registered in `main.ts`). Unlike the built-in `ValidationPipe`, it does **not** auto-coerce `@Param` or `@Query` values based on TypeScript metatypes. This means `@Param('id') id: number` will receive a **string** at runtime despite the `number` annotation — route params and query params must use an explicit pipe (`ParseExternalIdPipe`, `ParseIntPipe`, etc.) to convert types.
 - Use `ParseExternalIdPipe` to decode public-facing ExternalId parameters
@@ -537,7 +537,7 @@ async deleteUser(@Param('userId', ParseExternalIdPipe) userId: number) {
 
 #### Types and Interfaces
 
-- **Explicit return types required** for all functions/methods (enforced by ESLint)
+- **Explicit return types required** for all functions/methods (enforced by oxlint)
 - **No `any` type allowed** — use `unknown` if type is truly unknown
 - Exception: Controllers are exempt from explicit return types
 - Use `interface` for object contracts, `type` for unions/aliases
@@ -565,7 +565,7 @@ export const ConnectionStatus = { PENDING: 'PENDING', APPROVED: 'APPROVED' } as 
 
 - **Classes/Interfaces/Types**: PascalCase (`User`, `UserRepository`, `GetUserUseCase`)
 - **Variables/Functions**: camelCase (`userId`, `getUserToken`)
-- **Constants/Tokens**: UPPER_CASE (`JWT_SECRET`, `USER_REPOSITORY`). Local `const` variables may use camelCase — ESLint allows both
+- **Constants/Tokens**: UPPER_CASE (`JWT_SECRET`, `USER_REPOSITORY`). Local `const` variables may use camelCase. Naming conventions are not lint-enforced (oxlint has no `naming-convention` rule) — follow them in review
 - **Enum members**: UPPER_CASE (`BooleanInteger.TRUE`)
 - **Unused variables**: Prefix with `_` (`_unusedParam`)
 - **TypeORM entity columns**: Prefix with table abbreviation (`u_id`, `u_email`)
@@ -595,6 +595,8 @@ export const ConnectionStatus = { PENDING: 'PENDING', APPROVED: 'APPROVED' } as 
 
 #### Formatting
 
+Formatting is owned by **oxfmt** (`.oxfmtrc.json`, `printWidth: 120`). Run `npm run format` to apply it; CI runs `npm run format:check`. Linting is owned by **oxlint** with type-aware rules (`.oxlintrc.json`, backed by `oxlint-tsgolint`). There is no ESLint or Prettier in this project. Existing `eslint-disable` comments are honored by oxlint; prefer `oxlint-disable` for new ones.
+
 - **Quotes**: Single quotes only (`'string'`)
 - **Semicolons**: Required at end of statements
 - **Object curly spacing**: Always spaces (`{ foo }`, not `{foo}`)
@@ -613,12 +615,13 @@ export const ConnectionStatus = { PENDING: 'PENDING', APPROVED: 'APPROVED' } as 
 
 #### Import Organization
 
-**Import order** (enforced by ESLint `import-x/order` in `eslint.config.mjs`, no blank lines between groups):
+**Import order** (applied automatically by oxfmt `sortImports` in `.oxfmtrc.json`, alphabetical within each group, no blank lines between groups):
 
 1. Node.js built-in modules (`fs`, `path`)
-2. External modules (`typeorm`, `axios`), then `@nestjs/**` modules (same ESLint `external` group — `@nestjs/**` sorted after others)
-3. `@shared/**` modules (internal shared)
-4. Parent/sibling modules (relative imports)
+2. External modules (`typeorm`, `axios`)
+3. `@nestjs/**` modules
+4. `@shared/**` modules (internal shared)
+5. Parent/sibling modules (relative imports)
 
 **Example:**
 
@@ -626,11 +629,11 @@ export const ConnectionStatus = { PENDING: 'PENDING', APPROVED: 'APPROVED' } as 
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BooleanInteger } from '@shared/core/domain/BooleanInteger';
-import { UserRepository } from '../UserRepository';
 import { User } from '../../domain/User';
+import { UserRepository } from '../UserRepository';
 ```
 
-- **Unused imports**: Automatically removed by linter (`unused-imports` plugin)
+- **Unused imports**: Reported by oxlint `no-unused-vars`; `npm run lint:fix` removes them
 
 ---
 
@@ -888,7 +891,7 @@ New env keys must be added **both** to `.env.example` (envsubst format: `KEY=${K
 - **No direct `process.env` access** — always use the config layer in `src/shared/config/config.ts` (getter functions or config constants). Direct `process.env.X` reads are forbidden except in `config.ts` itself or in cases where no alternative exists (e.g., very early bootstrap). If you must access `process.env` directly, add an explicit comment explaining why.
 - **`as any` / `@ts-ignore` / `@ts-expect-error` are banned** — never suppress type errors. If an external library has a type mismatch, fix the type or use `unknown` with proper narrowing. This is also enforced in Code Style Guidelines but repeated here for visibility.
 - **Transactions** — when multiple DB mutations must be atomic, use `@Transactional()` (from `typeorm-transactional`) on the Facade method. Do not manually manage `EntityManager` or `QueryRunner` transactions. The transaction infrastructure is initialized in `main.ts` via `initializeTransactionalContext()` and wired in `AppModule` via `addTransactionalDataSource()` — these must be present for `@Transactional()` to work.
-- **Pre-commit verification** — before every commit, confirm that `npm run lint:check`, `npm run typecheck`, and `npm test` all pass locally. Do not rely on CI to catch issues after push.
+- **Pre-commit verification** — before every commit, confirm that `npm run format:check`, `npm run lint:check`, `npm run typecheck`, and `npm test` all pass locally. Do not rely on CI to catch issues after push.
 
 ---
 
