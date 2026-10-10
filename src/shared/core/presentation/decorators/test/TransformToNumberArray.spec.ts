@@ -1,5 +1,4 @@
 import { plainToInstance } from 'class-transformer';
-
 import { TransformToNumberArray } from '../TransformToNumberArray';
 
 class NumberArrayDto {

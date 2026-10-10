@@ -1,5 +1,4 @@
 import { plainToInstance } from 'class-transformer';
-
 import { TransformCommaToArray } from '../TransformCommaToArray';
 
 class CommaArrayDto {

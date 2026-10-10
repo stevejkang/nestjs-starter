@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { RedisCacheModule } from '../RedisCacheModule';
 import { CacheClient, CACHE_CLIENT } from '../interfaces';
+import { RedisCacheModule } from '../RedisCacheModule';
 
 function createMockClient(overrides: Partial<CacheClient> = {}): CacheClient {
   return {

@@ -1,6 +1,5 @@
-import { BadRequestException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-
+import { BadRequestException } from '@nestjs/common';
 import { TransformToNumber } from '../TransformToNumber';
 
 class NumberDto {
@@ -46,8 +45,6 @@ describe('TransformToNumber', () => {
   });
 
   it('should throw BadRequestException for non-numeric string', () => {
-    expect(() => plainToInstance(NumberDto, { value: 'abc' })).toThrow(
-      BadRequestException,
-    );
+    expect(() => plainToInstance(NumberDto, { value: 'abc' })).toThrow(BadRequestException);
   });
 });

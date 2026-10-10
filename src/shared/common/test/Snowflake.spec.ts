@@ -34,7 +34,7 @@ describe('Snowflake', () => {
           Snowflake.generate({
             timestamp: test.timestamp,
             shard_id: test.shard_id,
-          }).toString()
+          }).toString(),
         ).toEqual(test.value);
       }
     });

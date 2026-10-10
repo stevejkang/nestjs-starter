@@ -82,9 +82,7 @@ export class IdempotencyInterceptor implements NestInterceptor {
 
     const processing = await this.cacheClient.get(processingKey);
     if (processing === PROCESSING_MARKER) {
-      throw new ConflictException(
-        'A request with this Idempotency-Key is already being processed',
-      );
+      throw new ConflictException('A request with this Idempotency-Key is already being processed');
     }
 
     return null;

@@ -2,10 +2,10 @@ import { DataSource } from 'typeorm';
 import { addTransactionalDataSource } from 'typeorm-transactional';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { TraceIdIssuanceMiddleware } from '@shared/middlewares/TraceIdIssuanceMiddleware';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { config } from '@shared/config/config';
+import { TraceIdIssuanceMiddleware } from '@shared/middlewares/TraceIdIssuanceMiddleware';
 import { AppController } from './app.controller';
 import { AuthModule } from './auth/AuthModule';
 
@@ -24,10 +24,7 @@ import { AuthModule } from './auth/AuthModule';
         password: config.MYSQL.PASSWORD,
         database: config.MYSQL.DATABASE,
         synchronize: false,
-        entities: [
-          __dirname + '/**/entities/*Entity{.ts,.js}',
-          __dirname + '/**/entities/*View{.ts,.js}',
-        ],
+        entities: [__dirname + '/**/entities/*Entity{.ts,.js}', __dirname + '/**/entities/*View{.ts,.js}'],
         charset: 'utf8mb4',
         logging: true,
         connectTimeout: 10_000,

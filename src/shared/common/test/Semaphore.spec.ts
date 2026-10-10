@@ -1,5 +1,4 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
-
 import { Semaphore } from '../Semaphore';
 
 describe('Semaphore', () => {

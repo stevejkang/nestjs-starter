@@ -1,6 +1,6 @@
 import { AggregateRoot } from './AggregateRoot';
-import { UniqueEntityID } from './UniqueEntityID';
 import { DomainEvent, BaseDomainEvent } from './DomainEvent';
+import { UniqueEntityID } from './UniqueEntityID';
 
 interface AggregateObjectProps {
   foo: string;

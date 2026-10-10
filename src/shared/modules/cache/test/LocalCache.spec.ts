@@ -1,8 +1,4 @@
-import {
-  localCacheGet,
-  localCacheSet,
-  clearLocalCache,
-} from '../LocalCache';
+import { localCacheGet, localCacheSet, clearLocalCache } from '../LocalCache';
 
 describe('LocalCache', () => {
   let now: number;

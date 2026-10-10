@@ -14,7 +14,10 @@ export function InvalidateMethodCache(options: InvalidateMethodCacheOptions) {
   ): TypedPropertyDescriptor<T> => {
     const original = descriptor.value as unknown as (...args: unknown[]) => Promise<unknown>;
 
-    (descriptor as TypedPropertyDescriptor<unknown>).value = async function (this: Record<string | symbol, unknown>, ...args: unknown[]): Promise<unknown> {
+    (descriptor as TypedPropertyDescriptor<unknown>).value = async function (
+      this: Record<string | symbol, unknown>,
+      ...args: unknown[]
+    ): Promise<unknown> {
       const result = await original.apply(this, args);
 
       for (const prefix of prefixes) clearLocalCache(prefix);

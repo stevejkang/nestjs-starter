@@ -14,9 +14,7 @@ export interface IsValidUrlOptions {
 @ValidatorConstraint({ name: 'isValidUrl' })
 class IsValidUrlConstraint implements ValidatorConstraintInterface {
   validate(value: unknown, validationArguments: ValidationArguments): boolean {
-    const options = validationArguments.constraints[0] as
-      | IsValidUrlOptions
-      | undefined;
+    const options = validationArguments.constraints[0] as IsValidUrlOptions | undefined;
 
     if (options?.when?.(validationArguments.object) === false) {
       return true;
@@ -45,9 +43,8 @@ class IsValidUrlConstraint implements ValidatorConstraintInterface {
   }
 }
 
-export const IsValidUrl = (
-  options: IsValidUrlOptions = {},
-): PropertyDecorator =>
+export const IsValidUrl =
+  (options: IsValidUrlOptions = {}): PropertyDecorator =>
   (target: object, propertyKey: string | symbol) => {
     registerDecorator({
       name: 'isValidUrl',

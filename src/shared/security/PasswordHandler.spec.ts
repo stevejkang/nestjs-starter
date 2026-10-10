@@ -196,12 +196,10 @@ describe('PasswordHandler', () => {
       const uniqueHashes = new Set(hashes);
       expect(uniqueHashes.size).toBe(concurrentOperations);
 
-      const verifyPromises = hashes.map(hash =>
-        PasswordHandler.comparePasswords(password, hash)
-      );
+      const verifyPromises = hashes.map((hash) => PasswordHandler.comparePasswords(password, hash));
 
       const results = await Promise.all(verifyPromises);
-      expect(results.every(result => result === true)).toBe(true);
+      expect(results.every((result) => result === true)).toBe(true);
     });
   });
 });

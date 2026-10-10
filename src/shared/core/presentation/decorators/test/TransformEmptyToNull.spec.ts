@@ -1,5 +1,4 @@
 import { plainToInstance } from 'class-transformer';
-
 import { TransformEmptyToNull } from '../TransformEmptyToNull';
 
 class EmptyToNullDto {

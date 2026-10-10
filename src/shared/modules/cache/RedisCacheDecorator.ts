@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { buildCacheKey } from './CacheKeyBuilder';
-import { localCacheGet, localCacheSet } from './LocalCache';
 import { CacheClient, CACHE_CLIENT, MethodCacheOptions } from './interfaces';
+import { localCacheGet, localCacheSet } from './LocalCache';
 
 const logger = new Logger('MethodCache');
 
@@ -12,7 +12,7 @@ const inflightRequests = new Map<string, Promise<unknown>>();
 export function MethodCache(options: MethodCacheOptions) {
   const { prefix, ttlSeconds, keyArgs, deserialize = JSON.parse } = options;
   const localCacheTtl = Math.min(options.localCacheTtlSeconds ?? DEFAULT_LOCAL_CACHE_TTL_SECONDS, ttlSeconds);
-  const localCacheMaxStale = options.localCacheMaxStaleSeconds ?? (ttlSeconds - localCacheTtl);
+  const localCacheMaxStale = options.localCacheMaxStaleSeconds ?? ttlSeconds - localCacheTtl;
 
   return <T>(
     _target: object,
@@ -21,7 +21,10 @@ export function MethodCache(options: MethodCacheOptions) {
   ): TypedPropertyDescriptor<T> => {
     const original = descriptor.value as unknown as (...args: unknown[]) => Promise<unknown>;
 
-    (descriptor as TypedPropertyDescriptor<unknown>).value = async function (this: Record<string | symbol, unknown>, ...args: unknown[]): Promise<unknown> {
+    (descriptor as TypedPropertyDescriptor<unknown>).value = async function (
+      this: Record<string | symbol, unknown>,
+      ...args: unknown[]
+    ): Promise<unknown> {
       const client = this[CACHE_CLIENT] as CacheClient | undefined;
       const cacheKey = buildCacheKey(prefix, args, keyArgs);
 
@@ -66,8 +69,12 @@ export function MethodCache(options: MethodCacheOptions) {
             const refresh = fetchThroughCache(client);
             inflightRequests.set(cacheKey, refresh);
             refresh
-              .catch(() => { logger.warn(`Background refresh failed for key "${cacheKey}"`); })
-              .finally(() => { inflightRequests.delete(cacheKey); });
+              .catch(() => {
+                logger.warn(`Background refresh failed for key "${cacheKey}"`);
+              })
+              .finally(() => {
+                inflightRequests.delete(cacheKey);
+              });
           }
           return value;
         } catch {

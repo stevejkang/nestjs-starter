@@ -41,12 +41,7 @@ export class CursorPaginationResponse<T> {
     this.hasNext = hasNext;
   }
 
-  static of<T>(
-    items: T[],
-    totalCount: number,
-    next: string | null,
-    hasNext: boolean,
-  ): CursorPaginationResponse<T> {
+  static of<T>(items: T[], totalCount: number, next: string | null, hasNext: boolean): CursorPaginationResponse<T> {
     return new CursorPaginationResponse(items, totalCount, next, hasNext);
   }
 }

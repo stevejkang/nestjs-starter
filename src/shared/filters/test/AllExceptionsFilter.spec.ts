@@ -1,7 +1,7 @@
 import { ArgumentsHost, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
-import { AllExceptionsFilter } from '../AllExceptionsFilter';
 import { TRACE_ID_HEADER_KEY } from '../../middlewares/TraceIdIssuanceMiddleware';
+import { AllExceptionsFilter } from '../AllExceptionsFilter';
 
 jest.mock('../../config/config', () => ({
   IS_PRODUCTION: false,
@@ -14,10 +14,7 @@ function createMockHttpAdapter(): { getRequestUrl: jest.Mock; reply: jest.Mock }
   };
 }
 
-function createMockHost(
-  request: Record<string, unknown>,
-  response: Record<string, unknown>,
-): ArgumentsHost {
+function createMockHost(request: Record<string, unknown>, response: Record<string, unknown>): ArgumentsHost {
   return {
     switchToHttp: () => ({
       getRequest: () => request,

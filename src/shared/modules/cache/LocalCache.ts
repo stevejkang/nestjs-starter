@@ -24,12 +24,7 @@ export function localCacheGet(key: string): LocalCacheHit | undefined {
   return { value: entry.value, isStale: now >= entry.freshUntil };
 }
 
-export function localCacheSet(
-  key: string,
-  serialized: string,
-  ttlSeconds: number,
-  maxStaleSeconds: number,
-): void {
+export function localCacheSet(key: string, serialized: string, ttlSeconds: number, maxStaleSeconds: number): void {
   if (ttlSeconds <= 0) {
     return;
   }

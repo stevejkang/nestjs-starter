@@ -1,7 +1,7 @@
 import { of, lastValueFrom } from 'rxjs';
 import { CallHandler, ExecutionContext, HttpStatus } from '@nestjs/common';
-import { CoreResponseInterceptor } from '../CoreResponseInterceptor';
 import { TRACE_ID_HEADER_KEY } from '../../middlewares/TraceIdIssuanceMiddleware';
+import { CoreResponseInterceptor } from '../CoreResponseInterceptor';
 
 function createMockExecutionContext(options: {
   method?: string;

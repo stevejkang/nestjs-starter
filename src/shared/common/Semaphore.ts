@@ -26,14 +26,8 @@ export class Semaphore {
       return;
     }
 
-    if (
-      this.options.maxQueueSize !== undefined &&
-      this.queue.length >= this.options.maxQueueSize
-    ) {
-      throw new HttpException(
-        'Too Many Requests',
-        HttpStatus.TOO_MANY_REQUESTS,
-      );
+    if (this.options.maxQueueSize !== undefined && this.queue.length >= this.options.maxQueueSize) {
+      throw new HttpException('Too Many Requests', HttpStatus.TOO_MANY_REQUESTS);
     }
 
     return new Promise<void>((resolve, reject) => {
@@ -47,12 +41,7 @@ export class Semaphore {
             this.queue.splice(index, 1);
           }
 
-          reject(
-            new HttpException(
-              'Gateway Timeout',
-              HttpStatus.GATEWAY_TIMEOUT,
-            ),
-          );
+          reject(new HttpException('Gateway Timeout', HttpStatus.GATEWAY_TIMEOUT));
         }, this.options.timeoutMs);
       }
 

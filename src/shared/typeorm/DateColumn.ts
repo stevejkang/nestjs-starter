@@ -35,7 +35,8 @@ export function DateColumn(options: DateColumnOptions = {}): PropertyDecorator {
     Column({
       type: 'date',
       nullable: options.nullable || false,
-      transformer: options.nullable === true ? new DateColumnTransformer<Date | null>() : new DateColumnTransformer<Date>(),
+      transformer:
+        options.nullable === true ? new DateColumnTransformer<Date | null>() : new DateColumnTransformer<Date>(),
       ...options,
     })(target, propertyKey);
   };

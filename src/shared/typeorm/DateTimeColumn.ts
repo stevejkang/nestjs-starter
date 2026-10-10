@@ -35,7 +35,10 @@ export function DateTimeColumn(options: DateTimeColumnOptions = {}): PropertyDec
     Column({
       type: 'datetime',
       nullable: options.nullable || false,
-      transformer: options.nullable === true ? new DateTimeColumnTransformer<Date | null>() : new DateTimeColumnTransformer<Date>(),
+      transformer:
+        options.nullable === true
+          ? new DateTimeColumnTransformer<Date | null>()
+          : new DateTimeColumnTransformer<Date>(),
       ...options,
     })(target, propertyKey);
   };

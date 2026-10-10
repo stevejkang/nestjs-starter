@@ -1,7 +1,7 @@
+import { CacheClient, CACHE_CLIENT, MethodCacheOptions } from '../interfaces';
+import { InvalidateMethodCache } from '../InvalidateCacheDecorator';
 import { clearLocalCache } from '../LocalCache';
 import { MethodCache } from '../RedisCacheDecorator';
-import { InvalidateMethodCache } from '../InvalidateCacheDecorator';
-import { CacheClient, CACHE_CLIENT, MethodCacheOptions } from '../interfaces';
 
 const mockData = { id: 1, title: 'test-data' };
 const freshData = { id: 1, title: 'fresh-data' };
@@ -79,7 +79,7 @@ describe('MethodCache — local cache + stale-while-revalidate', () => {
 
       expect(second).toEqual(mockData);
       expect(spy).toHaveBeenCalledTimes(1);
-      expect((client.get as jest.Mock)).toHaveBeenCalledTimes(1);
+      expect(client.get as jest.Mock).toHaveBeenCalledTimes(1);
     });
 
     it('client.set rejects → local still populated, re-call serves local without origin', async () => {
@@ -151,9 +151,12 @@ describe('MethodCache — local cache + stale-while-revalidate', () => {
       const spy = jest.fn().mockResolvedValue(mockData);
       const mockGet = jest.fn().mockResolvedValue(JSON.stringify(mockData));
       const client = createMockClient({ get: mockGet });
-      const deserialize = jest.fn()
+      const deserialize = jest
+        .fn()
         .mockImplementationOnce((raw: string) => JSON.parse(raw))
-        .mockImplementationOnce(() => { throw new Error('DESERIALIZE_FAIL'); })
+        .mockImplementationOnce(() => {
+          throw new Error('DESERIALIZE_FAIL');
+        })
         .mockImplementation((raw: string) => JSON.parse(raw));
       const service = createSpyService(client, spy, 'l8', { deserialize });
 
@@ -215,7 +218,7 @@ describe('MethodCache — local cache + stale-while-revalidate', () => {
       await service.getData('x');
       await flushAsync();
 
-      expect((client.get as jest.Mock)).toHaveBeenCalledTimes(1);
+      expect(client.get as jest.Mock).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledTimes(1);
     });
 
@@ -252,7 +255,7 @@ describe('MethodCache — local cache + stale-while-revalidate', () => {
 
       expect(first).toEqual(mockData);
       expect(second).toEqual(mockData);
-      expect((client.get as jest.Mock)).toHaveBeenCalledTimes(2);
+      expect(client.get as jest.Mock).toHaveBeenCalledTimes(2);
     });
 
     it('refresh fails → stale still served, no error propagated, retry possible', async () => {
@@ -335,7 +338,7 @@ describe('MethodCache — local cache + stale-while-revalidate', () => {
 
       expect(stale).toEqual(mockData);
       expect(spy).toHaveBeenCalledTimes(1);
-      expect((client.get as jest.Mock)).toHaveBeenCalledTimes(1);
+      expect(client.get as jest.Mock).toHaveBeenCalledTimes(1);
     });
 
     it('deserialize applied to stale values too', async () => {
@@ -393,9 +396,7 @@ describe('MethodCache — local cache + stale-while-revalidate', () => {
         rejectFn = rej;
       });
 
-      const spy = jest.fn()
-        .mockResolvedValueOnce(mockData)
-        .mockReturnValueOnce(deferred);
+      const spy = jest.fn().mockResolvedValueOnce(mockData).mockReturnValueOnce(deferred);
 
       const client = createMockClient();
       const service = createSpyService(client, spy, 's10', {
@@ -455,7 +456,7 @@ describe('MethodCache — local cache + stale-while-revalidate', () => {
 
       expect(result).toEqual(freshData);
       expect(spy).toHaveBeenCalledTimes(2);
-      expect((client.get as jest.Mock)).toHaveBeenCalledTimes(2);
+      expect(client.get as jest.Mock).toHaveBeenCalledTimes(2);
     });
 
     it('ttlSeconds=3600 at 3599s → stale served', async () => {
@@ -510,7 +511,7 @@ describe('MethodCache — local cache + stale-while-revalidate', () => {
       now += 29_000;
       const fresh = await service.getData('x');
       expect(fresh).toEqual(mockData);
-      expect((client.get as jest.Mock)).toHaveBeenCalledTimes(1);
+      expect(client.get as jest.Mock).toHaveBeenCalledTimes(1);
 
       // 31s total: past clamped freshUntil (30s), maxStale=0 → expired, full miss
       now += 2_000;
@@ -545,7 +546,7 @@ describe('MethodCache — local cache + stale-while-revalidate', () => {
       await flushAsync();
 
       expect(result).toEqual(mockData);
-      expect((client.get as jest.Mock)).toHaveBeenCalledTimes(2);
+      expect(client.get as jest.Mock).toHaveBeenCalledTimes(2);
     });
   });
 });

@@ -84,9 +84,7 @@ describe('TimeUnit', () => {
     });
 
     it('should reject non-finite values', () => {
-      expect(() => TimeUnit.fromSeconds(Number.POSITIVE_INFINITY)).toThrow(
-        RangeError,
-      );
+      expect(() => TimeUnit.fromSeconds(Number.POSITIVE_INFINITY)).toThrow(RangeError);
       expect(() => TimeUnit.fromSeconds(Number.NaN)).toThrow(RangeError);
     });
   });

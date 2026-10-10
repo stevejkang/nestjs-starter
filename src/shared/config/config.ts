@@ -22,10 +22,13 @@ dotenv.config({
 });
 
 function required<T>(key: string, defaultValue?: string): T {
-  if (!IS_TEST && (typeof process.env[key] === 'undefined' && typeof defaultValue === 'undefined' || process.env[key] === '')) {
+  if (
+    !IS_TEST &&
+    ((typeof process.env[key] === 'undefined' && typeof defaultValue === 'undefined') || process.env[key] === '')
+  ) {
     throw new Error('Missing required environment variable: ' + key);
   }
-  return process.env[key] as T || defaultValue as T;
+  return (process.env[key] as T) || (defaultValue as T);
 }
 
 function optional<T>(key: string, defaultValue: T): T {

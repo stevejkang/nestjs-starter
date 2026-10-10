@@ -1,8 +1,8 @@
 import request from 'supertest';
 import { Controller, Get, INestApplication, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { RequestContext } from '../RequestContext';
 import { TraceIdIssuanceMiddleware, TRACE_ID_HEADER_KEY } from '../../middlewares/TraceIdIssuanceMiddleware';
+import { RequestContext } from '../RequestContext';
 
 @Controller('probe')
 class ProbeController {

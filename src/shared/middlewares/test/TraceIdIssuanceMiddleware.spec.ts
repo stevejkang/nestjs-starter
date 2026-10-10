@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { TraceIdIssuanceMiddleware, TRACE_ID_HEADER_KEY } from '../TraceIdIssuanceMiddleware';
 import { Snowflake } from '../../common/Snowflake';
 import { RequestContext } from '../../context/RequestContext';
+import { TraceIdIssuanceMiddleware, TRACE_ID_HEADER_KEY } from '../TraceIdIssuanceMiddleware';
 
 jest.mock('../../common/Snowflake');
 

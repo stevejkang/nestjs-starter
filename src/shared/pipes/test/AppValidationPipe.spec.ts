@@ -1,5 +1,5 @@
-import { BadRequestException } from '@nestjs/common';
 import { IsString, IsInt } from 'class-validator';
+import { BadRequestException } from '@nestjs/common';
 import { AppValidationPipe } from '../AppValidationPipe';
 
 class TestBodyDto {
@@ -63,18 +63,12 @@ describe('AppValidationPipe', () => {
   describe('delegation to super.transform', () => {
     it('should validate body DTO and throw BadRequestException for invalid payload', async () => {
       await expect(
-        pipe.transform(
-          { name: 123, age: 'not-a-number' },
-          { type: 'body', metatype: TestBodyDto, data: '' },
-        ),
+        pipe.transform({ name: 123, age: 'not-a-number' }, { type: 'body', metatype: TestBodyDto, data: '' }),
       ).rejects.toThrow(BadRequestException);
     });
 
     it('should validate and transform query DTO with class metatype', async () => {
-      const result = await pipe.transform(
-        { search: 'hello' },
-        { type: 'query', metatype: TestQueryDto, data: '' },
-      );
+      const result = await pipe.transform({ search: 'hello' }, { type: 'query', metatype: TestQueryDto, data: '' });
 
       expect(result).toBeInstanceOf(TestQueryDto);
       expect((result as TestQueryDto).search).toBe('hello');

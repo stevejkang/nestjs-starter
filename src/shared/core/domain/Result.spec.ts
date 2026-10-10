@@ -22,11 +22,7 @@ describe('Result', () => {
   });
 
   it('should return result when combine', () => {
-    expect(Result.combine([Result.ok('OK'), Result.fail('FAIL')])).toEqual(
-      Result.fail('FAIL'),
-    );
-    expect(
-      Result.combine([Result.ok('OK'), Result.ok('OK')]).isSuccess,
-    ).toEqual(true);
+    expect(Result.combine([Result.ok('OK'), Result.fail('FAIL')])).toEqual(Result.fail('FAIL'));
+    expect(Result.combine([Result.ok('OK'), Result.ok('OK')]).isSuccess).toEqual(true);
   });
 });

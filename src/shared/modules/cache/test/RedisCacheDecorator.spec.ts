@@ -1,6 +1,6 @@
+import { CacheClient, CACHE_CLIENT } from '../interfaces';
 import { clearLocalCache } from '../LocalCache';
 import { MethodCache } from '../RedisCacheDecorator';
-import { CacheClient, CACHE_CLIENT } from '../interfaces';
 
 function createMockClient(overrides: Partial<CacheClient> = {}): CacheClient {
   return {
@@ -90,11 +90,7 @@ describe('MethodCache', () => {
 
       expect(result).toEqual({ id: '42', name: 'User 42' });
       expect(client.get).toHaveBeenCalledWith('user:42');
-      expect(client.set).toHaveBeenCalledWith(
-        'user:42',
-        JSON.stringify({ id: '42', name: 'User 42' }),
-        60,
-      );
+      expect(client.set).toHaveBeenCalledWith('user:42', JSON.stringify({ id: '42', name: 'User 42' }), 60);
     });
 
     it('should register the cache key in a registry set', async () => {
@@ -135,11 +131,7 @@ describe('MethodCache', () => {
       const client = createMockClient();
       const service = createTestService(client);
 
-      const [r1, r2, r3] = await Promise.all([
-        service.getUser('1'),
-        service.getUser('1'),
-        service.getUser('1'),
-      ]);
+      const [r1, r2, r3] = await Promise.all([service.getUser('1'), service.getUser('1'), service.getUser('1')]);
 
       expect(r1).toEqual(r2);
       expect(r2).toEqual(r3);
@@ -171,10 +163,7 @@ describe('MethodCache', () => {
       }
 
       const service = new NoCacheService();
-      const [r1, r2] = await Promise.all([
-        service.getUser('1'),
-        service.getUser('1'),
-      ]);
+      const [r1, r2] = await Promise.all([service.getUser('1'), service.getUser('1')]);
 
       expect(r1).toEqual({ id: '1', name: 'User 1' });
       expect(r2).toEqual({ id: '1', name: 'User 1' });
@@ -224,11 +213,7 @@ describe('MethodCache', () => {
       const spy = jest.fn().mockRejectedValue(new Error('DB_FAIL'));
       const service = createSpyService(client, spy, 'coalesce-error');
 
-      const results = await Promise.allSettled([
-        service.getData('k'),
-        service.getData('k'),
-        service.getData('k'),
-      ]);
+      const results = await Promise.allSettled([service.getData('k'), service.getData('k'), service.getData('k')]);
 
       for (const result of results) {
         expect(result.status).toBe('rejected');
@@ -252,10 +237,7 @@ describe('MethodCache', () => {
 
     it('should clean up inflight after a rejection so the next call retries', async () => {
       const client = createMockClient();
-      const spy = jest
-        .fn()
-        .mockRejectedValueOnce(new Error('DB_FAIL'))
-        .mockResolvedValueOnce({ ok: true });
+      const spy = jest.fn().mockRejectedValueOnce(new Error('DB_FAIL')).mockResolvedValueOnce({ ok: true });
       const service = createSpyService(client, spy, 'retry-after-failure');
 
       await expect(service.getData('k')).rejects.toThrow('DB_FAIL');
@@ -295,10 +277,7 @@ describe('MethodCache', () => {
       const spy = jest.fn().mockImplementation((key: string) => Promise.resolve({ key }));
       const service = createSpyService(client, spy, 'independent');
 
-      const [first, second] = await Promise.all([
-        service.getData('a'),
-        service.getData('b'),
-      ]);
+      const [first, second] = await Promise.all([service.getData('a'), service.getData('b')]);
 
       expect(first).toEqual({ key: 'a' });
       expect(second).toEqual({ key: 'b' });
@@ -312,16 +291,8 @@ describe('MethodCache', () => {
 
       await Promise.all([service.getData('a'), service.getData('b')]);
 
-      expect(client.set).toHaveBeenCalledWith(
-        'independent-keys:a',
-        JSON.stringify({ key: 'a' }),
-        60,
-      );
-      expect(client.set).toHaveBeenCalledWith(
-        'independent-keys:b',
-        JSON.stringify({ key: 'b' }),
-        60,
-      );
+      expect(client.set).toHaveBeenCalledWith('independent-keys:a', JSON.stringify({ key: 'a' }), 60);
+      expect(client.set).toHaveBeenCalledWith('independent-keys:b', JSON.stringify({ key: 'b' }), 60);
     });
   });
 
@@ -348,11 +319,7 @@ describe('MethodCache', () => {
 
       await service.getData('k');
 
-      expect(client.set).toHaveBeenCalledWith(
-        'corrupt-overwrite:k',
-        JSON.stringify({ ok: true }),
-        60,
-      );
+      expect(client.set).toHaveBeenCalledWith('corrupt-overwrite:k', JSON.stringify({ ok: true }), 60);
     });
 
     it('should fall back to the original method when a custom deserializer throws', async () => {

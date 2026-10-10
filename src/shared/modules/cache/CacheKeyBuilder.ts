@@ -31,14 +31,8 @@ function sortObjectKeys(obj: Record<string, unknown>): Record<string, unknown> {
   return result;
 }
 
-export function buildCacheKey(
-  prefix: string,
-  args: unknown[],
-  keyArgs?: number[],
-): string {
-  const selectedArgs = keyArgs
-    ? keyArgs.filter((i) => i < args.length).map((i) => args[i])
-    : args;
+export function buildCacheKey(prefix: string, args: unknown[], keyArgs?: number[]): string {
+  const selectedArgs = keyArgs ? keyArgs.filter((i) => i < args.length).map((i) => args[i]) : args;
 
   if (selectedArgs.length === 0) return prefix;
 

@@ -1,5 +1,5 @@
-import { InvalidateMethodCache } from '../InvalidateCacheDecorator';
 import { CacheClient, CACHE_CLIENT } from '../interfaces';
+import { InvalidateMethodCache } from '../InvalidateCacheDecorator';
 import { clearLocalCache, localCacheGet, localCacheSet } from '../LocalCache';
 
 function createMockClient(overrides: Partial<CacheClient> = {}): CacheClient {
@@ -62,9 +62,7 @@ describe('InvalidateMethodCache', () => {
   describe('multi-prefix invalidation', () => {
     it('should invalidate keys across all specified prefixes', async () => {
       const client = createMockClient({
-        smembers: jest.fn()
-          .mockResolvedValueOnce(['user:1'])
-          .mockResolvedValueOnce(['profile:1', 'profile:2']),
+        smembers: jest.fn().mockResolvedValueOnce(['user:1']).mockResolvedValueOnce(['profile:1', 'profile:2']),
       });
       const service = createTestService(client);
 

@@ -1,6 +1,5 @@
-import { BadRequestException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-
+import { BadRequestException } from '@nestjs/common';
 import { TransformToBoolean } from '../TransformToBoolean';
 
 class BooleanDto {
@@ -33,11 +32,7 @@ describe('TransformToBoolean', () => {
   });
 
   it('should throw BadRequestException for invalid values', () => {
-    expect(() => plainToInstance(BooleanDto, { value: 'maybe' })).toThrow(
-      BadRequestException,
-    );
-    expect(() => plainToInstance(BooleanDto, { value: 2 })).toThrow(
-      BadRequestException,
-    );
+    expect(() => plainToInstance(BooleanDto, { value: 'maybe' })).toThrow(BadRequestException);
+    expect(() => plainToInstance(BooleanDto, { value: 2 })).toThrow(BadRequestException);
   });
 });

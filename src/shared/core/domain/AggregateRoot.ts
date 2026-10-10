@@ -1,6 +1,6 @@
+import { DomainEvent } from './DomainEvent';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { UniqueEntityID } from './UniqueEntityID';
-import { DomainEvent } from './DomainEvent';
 
 interface AggregateObjectProps {
   [index: string]: any;

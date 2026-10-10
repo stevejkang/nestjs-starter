@@ -20,7 +20,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const httpMethod = httpRequest.method;
     const httpUrl = httpAdapter.getRequestUrl(httpRequest);
 
-    const stack = exception instanceof Error ? exception.stack : exception as string;
+    const stack = exception instanceof Error ? exception.stack : (exception as string);
     const errorName = exception instanceof Error ? exception.name : '';
     const errorMessage = exception instanceof Error ? exception.message : '';
 
@@ -35,13 +35,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
       error: {
         name: errorName,
         message: errorMessage,
-        stack: this.needToShowStack() && stack
-          ? stack
-            .toString()
-            .split('\n')
-            .slice(1)
-            .map(line => line.trim())
-          : [],
+        stack:
+          this.needToShowStack() && stack
+            ? stack
+                .toString()
+                .split('\n')
+                .slice(1)
+                .map((line) => line.trim())
+            : [],
       },
       result: {},
     };

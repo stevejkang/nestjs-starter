@@ -1,5 +1,4 @@
 import { validate } from 'class-validator';
-
 import { IsValidUrl } from '../IsValidUrl';
 
 class UrlDto {

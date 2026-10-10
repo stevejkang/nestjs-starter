@@ -44,11 +44,7 @@ export class Snowflake {
     }
   }
 
-  static extractBits(
-    snowflake: SnowflakeResolvable,
-    start: number,
-    length?: number,
-  ): number {
+  static extractBits(snowflake: SnowflakeResolvable, start: number, length?: number): number {
     return parseInt(
       length
         ? Snowflake.binary(snowflake).substring(start, start + length)
@@ -58,13 +54,10 @@ export class Snowflake {
   }
 
   static binary(snowflake: SnowflakeResolvable): string {
-    const cached64BitZeros =
-      '0000000000000000000000000000000000000000000000000000000000000000';
+    const cached64BitZeros = '0000000000000000000000000000000000000000000000000000000000000000';
     const binValue = BigInt(snowflake).toString(2);
 
-    return binValue.length < 64
-      ? cached64BitZeros.substring(0, 64 - binValue.length) + binValue
-      : binValue;
+    return binValue.length < 64 ? cached64BitZeros.substring(0, 64 - binValue.length) + binValue : binValue;
   }
 }
 

@@ -2,8 +2,8 @@ import { Request } from 'express';
 import jwt from 'jsonwebtoken';
 import { JsonWebTokenError, JwtPayload, TokenExpiredError } from 'jsonwebtoken';
 import { Strategy } from 'passport-custom';
-import { PassportStrategy } from '@nestjs/passport';
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
 import { config } from '@shared/config/config';
 
 export const AUTH_HEADER = 'X-Custom-Key';
@@ -42,7 +42,13 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
         throw new UnauthorizedException('ApprovalRequired');
       }
 
-      return { username: payload.username, id: payload.id, email: payload.email, isApproved: payload.isApproved, scope: payload.scope };
+      return {
+        username: payload.username,
+        id: payload.id,
+        email: payload.email,
+        isApproved: payload.isApproved,
+        scope: payload.scope,
+      };
     } catch (e) {
       if (e instanceof SyntaxError) {
         throw new BadRequestException('InvalidJSONObject');

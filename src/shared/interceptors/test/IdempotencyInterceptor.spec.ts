@@ -1,7 +1,7 @@
 import { of, lastValueFrom } from 'rxjs';
 import { CallHandler, ConflictException, ExecutionContext, HttpStatus } from '@nestjs/common';
-import { IdempotencyInterceptor } from '../IdempotencyInterceptor';
 import { CacheClient } from '../../modules/cache/interfaces';
+import { IdempotencyInterceptor } from '../IdempotencyInterceptor';
 
 function createMockCacheClient(overrides: Partial<CacheClient> = {}): jest.Mocked<CacheClient> {
   return {
@@ -130,9 +130,7 @@ describe('IdempotencyInterceptor', () => {
       const context = createMockExecutionContext({ 'idempotency-key': 'abc-123' });
       const handler = createMockCallHandler();
 
-      await expect(
-        lastValueFrom(interceptor.intercept(context, handler)),
-      ).rejects.toThrow(ConflictException);
+      await expect(lastValueFrom(interceptor.intercept(context, handler))).rejects.toThrow(ConflictException);
 
       expect(handler.handle).not.toHaveBeenCalled();
     });
@@ -149,11 +147,7 @@ describe('IdempotencyInterceptor', () => {
 
       await lastValueFrom(interceptor.intercept(context, handler));
 
-      expect(cacheClient.set).not.toHaveBeenCalledWith(
-        'idempotency:abc-123',
-        expect.any(String),
-        10800,
-      );
+      expect(cacheClient.set).not.toHaveBeenCalledWith('idempotency:abc-123', expect.any(String), 10800);
     });
 
     it('should still remove the processing marker on 5xx', async () => {
@@ -206,11 +200,7 @@ describe('IdempotencyInterceptor', () => {
 
       await lastValueFrom(interceptor.intercept(context, handler));
 
-      expect(cacheClient.set).toHaveBeenCalledWith(
-        'idempotency:abc-123:processing',
-        '__processing__',
-        300,
-      );
+      expect(cacheClient.set).toHaveBeenCalledWith('idempotency:abc-123:processing', '__processing__', 300);
     });
   });
 

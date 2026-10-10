@@ -1,13 +1,13 @@
-import { initializeTransactionalContext } from 'typeorm-transactional';
 import helmet from 'helmet';
+import { initializeTransactionalContext } from 'typeorm-transactional';
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
+import CLIENT_URL_WHITELIST from '@shared/config/ClientURLWhitelist';
+import { IS_PRODUCTION } from '@shared/config/config';
+import { initializeSwaggerDocument } from '@shared/config/swagger.config';
 import { AllExceptionsFilter } from '@shared/filters/AllExceptionsFilter';
 import { CoreResponseInterceptor } from '@shared/interceptors/CoreResponseInterceptor';
 import { HttpLoggingInterceptor } from '@shared/interceptors/HttpLoggingInterceptor';
 import { AppValidationPipe } from '@shared/pipes/AppValidationPipe';
-import CLIENT_URL_WHITELIST from '@shared/config/ClientURLWhitelist';
-import { IS_PRODUCTION } from '@shared/config/config';
-import { initializeSwaggerDocument } from '@shared/config/swagger.config';
 import { AppModule } from './AppModule';
 
 async function bootstrap(): Promise<void> {

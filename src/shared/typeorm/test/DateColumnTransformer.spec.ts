@@ -47,9 +47,7 @@ describe('DateColumnTransformer', () => {
     });
 
     it('should throw on unsupported input type', () => {
-      expect(() => transformer.to(123 as unknown as Date)).toThrow(
-        'Unsupported input type for DateColumnTransformer',
-      );
+      expect(() => transformer.to(123 as unknown as Date)).toThrow('Unsupported input type for DateColumnTransformer');
     });
   });
 

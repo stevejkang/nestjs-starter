@@ -1,5 +1,4 @@
 import { Test } from '@nestjs/testing';
-
 import { DistributedLockService } from '../DistributedLockService';
 import { LockClient, LOCK_CLIENT } from '../interfaces';
 
@@ -14,10 +13,7 @@ function createMockClient(overrides: Partial<LockClient> = {}): LockClient {
 
 async function buildService(client: LockClient): Promise<DistributedLockService> {
   const module = await Test.createTestingModule({
-    providers: [
-      DistributedLockService,
-      { provide: LOCK_CLIENT, useValue: client },
-    ],
+    providers: [DistributedLockService, { provide: LOCK_CLIENT, useValue: client }],
   }).compile();
 
   return module.get(DistributedLockService);
@@ -35,12 +31,7 @@ describe('DistributedLockService', () => {
 
       expect(value).not.toBeNull();
       expect(typeof value).toBe('string');
-      expect(client.set).toHaveBeenCalledWith(
-        'test-lock',
-        expect.any(String),
-        10_000,
-        true,
-      );
+      expect(client.set).toHaveBeenCalledWith('test-lock', expect.any(String), 10_000, true);
     });
 
     it('returns null when lock is already held and retries exhausted', async () => {
@@ -58,10 +49,7 @@ describe('DistributedLockService', () => {
     });
 
     it('retries on failure and succeeds on later attempt', async () => {
-      const setMock = jest.fn()
-        .mockResolvedValueOnce(null)
-        .mockResolvedValueOnce(null)
-        .mockResolvedValueOnce('OK');
+      const setMock = jest.fn().mockResolvedValueOnce(null).mockResolvedValueOnce(null).mockResolvedValueOnce('OK');
       const client = createMockClient({ set: setMock });
       const service = await buildService(client);
 
@@ -142,10 +130,7 @@ describe('DistributedLockService', () => {
       const service = await buildService(client);
       const fn = jest.fn().mockResolvedValue('result');
 
-      const result = await service.executeWithLock(
-        { key: 'test-lock', retryCount: 0 },
-        fn,
-      );
+      const result = await service.executeWithLock({ key: 'test-lock', retryCount: 0 }, fn);
 
       expect(result).toBe('result');
       expect(fn).toHaveBeenCalledTimes(1);
@@ -161,9 +146,7 @@ describe('DistributedLockService', () => {
       const error = new Error('fn-error');
 
       await expect(
-        service.executeWithLock({ key: 'test-lock', retryCount: 0 }, () =>
-          Promise.reject(error),
-        ),
+        service.executeWithLock({ key: 'test-lock', retryCount: 0 }, () => Promise.reject(error)),
       ).rejects.toThrow('fn-error');
 
       expect(client.eval).toHaveBeenCalledTimes(1);
@@ -176,12 +159,7 @@ describe('DistributedLockService', () => {
       const service = await buildService(client);
       const fn = jest.fn();
 
-      await expect(
-        service.executeWithLock(
-          { key: 'test-lock', retryCount: 0 },
-          fn,
-        ),
-      ).rejects.toThrow();
+      await expect(service.executeWithLock({ key: 'test-lock', retryCount: 0 }, fn)).rejects.toThrow();
 
       expect(fn).not.toHaveBeenCalled();
       expect(client.eval).not.toHaveBeenCalled();

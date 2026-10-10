@@ -18,9 +18,7 @@ const DEFAULT_RETRY_DELAY_MS = 200;
 export class DistributedLockService {
   private readonly logger = new Logger(DistributedLockService.name);
 
-  constructor(
-    @Inject(LOCK_CLIENT) private readonly client: LockClient,
-  ) {}
+  constructor(@Inject(LOCK_CLIENT) private readonly client: LockClient) {}
 
   async acquireLock(options: LockOptions): Promise<string | null> {
     const {
@@ -43,9 +41,7 @@ export class DistributedLockService {
       }
 
       if (attempt < maxAttempts - 1) {
-        const delay = retryJitter
-          ? retryDelayMs + Math.floor(Math.random() * retryDelayMs)
-          : retryDelayMs;
+        const delay = retryJitter ? retryDelayMs + Math.floor(Math.random() * retryDelayMs) : retryDelayMs;
         await this.sleep(delay);
       }
     }
