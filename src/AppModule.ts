@@ -44,6 +44,6 @@ import { AuthModule } from './auth/AuthModule';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(TraceIdIssuanceMiddleware).forRoutes('*');
+    consumer.apply(TraceIdIssuanceMiddleware).forRoutes('{*path}');
   }
 }
