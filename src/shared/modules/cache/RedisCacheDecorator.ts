@@ -10,7 +10,8 @@ const DEFAULT_LOCAL_CACHE_TTL_SECONDS = 60;
 const inflightRequests = new Map<string, Promise<unknown>>();
 
 export function MethodCache(options: MethodCacheOptions) {
-  const { prefix, ttlSeconds, keyArgs, deserialize = JSON.parse } = options;
+  const { prefix, ttlSeconds, keyArgs } = options;
+  const deserialize = (raw: string): unknown => (options.deserialize ? options.deserialize(raw) : JSON.parse(raw));
   const localCacheTtl = Math.min(options.localCacheTtlSeconds ?? DEFAULT_LOCAL_CACHE_TTL_SECONDS, ttlSeconds);
   const localCacheMaxStale = options.localCacheMaxStaleSeconds ?? ttlSeconds - localCacheTtl;
 

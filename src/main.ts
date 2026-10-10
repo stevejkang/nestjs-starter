@@ -55,4 +55,4 @@ async function bootstrap(): Promise<void> {
 
   await app.listen(80);
 }
-bootstrap().then();
+void bootstrap();

@@ -59,7 +59,7 @@ export class IdempotencyInterceptor implements NestInterceptor {
               .set(cacheKey, value, RESULT_TTL_SECONDS)
               .then(() => this.cacheClient.del([processingKey]))
               .catch((error: unknown) => {
-                this.logger.warn(`Failed to cache idempotency result: ${error}`);
+                this.logger.warn(`Failed to cache idempotency result: ${String(error)}`);
               });
           }),
         );
@@ -68,7 +68,7 @@ export class IdempotencyInterceptor implements NestInterceptor {
         if (error instanceof ConflictException) {
           return throwError(() => error);
         }
-        this.logger.warn(`Idempotency cache error, falling through: ${error}`);
+        this.logger.warn(`Idempotency cache error, falling through: ${String(error)}`);
         return next.handle();
       }),
     );
@@ -94,7 +94,7 @@ export class IdempotencyInterceptor implements NestInterceptor {
 
   private cleanupProcessingMarker(processingKey: string): void {
     this.cacheClient.del([processingKey]).catch((error: unknown) => {
-      this.logger.warn(`Failed to clean up processing marker: ${error}`);
+      this.logger.warn(`Failed to clean up processing marker: ${String(error)}`);
     });
   }
 }
