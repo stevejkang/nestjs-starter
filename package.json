@@ -62,7 +62,7 @@
     "@types/node": "^25.9.9",
     "@types/supertest": "^7.2.1",
     "jest": "^30.5.2",
-    "oxfmt": "^0.73.0",
+    "oxfmt": "^0.74.0",
     "oxlint": "^1.88.0",
     "oxlint-tsgolint": "^7.0.2004",
     "source-map-support": "^0.5.21",
